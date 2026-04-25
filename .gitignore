@@ -1,0 +1,22 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Spark
+spark-warehouse/
+metastore_db/
+derby.log
+*.crc
+.spark-staging/
+
+# Project-specific
+data/raw/
+data/parquet/
+outputs/
+!outputs/.gitkeep
