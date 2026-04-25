@@ -1,0 +1,7 @@
+{
+  "csv_seconds": 4.074536333,
+  "csv_rows": 546,
+  "parquet_seconds": 1.219087,
+  "parquet_rows": 546,
+  "speedup_parquet_over_csv": 3.342285114187913
+}

@@ -1,0 +1,38 @@
+== Parsed Logical Plan ==
+'GlobalLimit 10
++- 'LocalLimit 10
+   +- 'Sort ['revenue DESC NULLS LAST], true
+      +- 'Aggregate ['StockCode, 'Description], ['StockCode, 'Description, 'SUM('Revenue) AS revenue#818, 'SUM('Quantity) AS units_sold#819]
+         +- 'UnresolvedRelation [sales], [], false
+
+== Analyzed Logical Plan ==
+StockCode: string, Description: string, revenue: double, units_sold: bigint
+GlobalLimit 10
++- LocalLimit 10
+   +- Sort [revenue#818 DESC NULLS LAST], true
+      +- Aggregate [StockCode#792, Description#793], [StockCode#792, Description#793, sum(Revenue#808) AS revenue#818, sum(Quantity#794) AS units_sold#819L]
+         +- SubqueryAlias sales
+            +- View (`sales`, [Invoice#791,StockCode#792,Description#793,Quantity#794,InvoiceDate#795,Price#796,Customer ID#797,Country#798,Revenue#808])
+               +- Project [Invoice#791, StockCode#792, Description#793, Quantity#794, InvoiceDate#795, Price#796, Customer ID#797, Country#798, (cast(Quantity#794 as double) * Price#796) AS Revenue#808]
+                  +- Filter (((((Quantity#794 > 0) AND (Price#796 > cast(0 as double))) AND isnotnull(Customer ID#797)) AND NOT StartsWith(Invoice#791, C)) AND ((InvoiceDate#795 >= cast(2009-12-01 00:00:00 as timestamp)) AND (InvoiceDate#795 <= cast(2011-12-09 23:59:59 as timestamp))))
+                     +- Relation [Invoice#791,StockCode#792,Description#793,Quantity#794,InvoiceDate#795,Price#796,Customer ID#797,Country#798] csv
+
+== Optimized Logical Plan ==
+GlobalLimit 10
++- LocalLimit 10
+   +- Sort [revenue#818 DESC NULLS LAST], true
+      +- Aggregate [StockCode#792, Description#793], [StockCode#792, Description#793, sum(Revenue#808) AS revenue#818, sum(Quantity#794) AS units_sold#819L]
+         +- Project [StockCode#792, Description#793, Quantity#794, (cast(Quantity#794 as double) * Price#796) AS Revenue#808]
+            +- Filter ((((isnotnull(Quantity#794) AND isnotnull(Price#796)) AND isnotnull(Invoice#791)) AND isnotnull(InvoiceDate#795)) AND (((((Quantity#794 > 0) AND (Price#796 > 0.0)) AND isnotnull(Customer ID#797)) AND NOT StartsWith(Invoice#791, C)) AND ((InvoiceDate#795 >= 2009-12-01 00:00:00) AND (InvoiceDate#795 <= 2011-12-09 23:59:59))))
+               +- Relation [Invoice#791,StockCode#792,Description#793,Quantity#794,InvoiceDate#795,Price#796,Customer ID#797,Country#798] csv
+
+== Physical Plan ==
+AdaptiveSparkPlan isFinalPlan=false
++- TakeOrderedAndProject(limit=10, orderBy=[revenue#818 DESC NULLS LAST], output=[StockCode#792,Description#793,revenue#818,units_sold#819L])
+   +- HashAggregate(keys=[StockCode#792, Description#793], functions=[sum(Revenue#808), sum(Quantity#794)], output=[StockCode#792, Description#793, revenue#818, units_sold#819L])
+      +- Exchange hashpartitioning(StockCode#792, Description#793, 8), ENSURE_REQUIREMENTS, [plan_id=535]
+         +- HashAggregate(keys=[StockCode#792, Description#793], functions=[partial_sum(Revenue#808), partial_sum(Quantity#794)], output=[StockCode#792, Description#793, sum#828, sum#829L])
+            +- Project [StockCode#792, Description#793, Quantity#794, (cast(Quantity#794 as double) * Price#796) AS Revenue#808]
+               +- Filter (((((((((isnotnull(Quantity#794) AND isnotnull(Price#796)) AND isnotnull(Invoice#791)) AND isnotnull(InvoiceDate#795)) AND (Quantity#794 > 0)) AND (Price#796 > 0.0)) AND isnotnull(Customer ID#797)) AND NOT StartsWith(Invoice#791, C)) AND (InvoiceDate#795 >= 2009-12-01 00:00:00)) AND (InvoiceDate#795 <= 2011-12-09 23:59:59))
+                  +- FileScan csv [Invoice#791,StockCode#792,Description#793,Quantity#794,InvoiceDate#795,Price#796,Customer ID#797] Batched: false, DataFilters: [isnotnull(Quantity#794), isnotnull(Price#796), isnotnull(Invoice#791), isnotnull(InvoiceDate#795..., Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/Users/marwanamr/Mini project2/data/raw/online_retail_II.csv], PartitionFilters: [], PushedFilters: [IsNotNull(Quantity), IsNotNull(Price), IsNotNull(Invoice), IsNotNull(InvoiceDate), GreaterThan(Q..., ReadSchema: struct<Invoice:string,StockCode:string,Description:string,Quantity:int,InvoiceDate:timestamp,Pric...
+

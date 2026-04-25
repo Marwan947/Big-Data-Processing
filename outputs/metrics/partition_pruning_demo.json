@@ -1,0 +1,10 @@
+{
+  "full_scan_seconds": 0.7703412500000004,
+  "full_scan_rows": 1067371,
+  "pruned_scan_seconds": 0.08781266600000048,
+  "pruned_scan_rows": 522714,
+  "speedup": 8.77255281145884,
+  "partition_filter_lines": [
+    "+- FileScan parquet [Invoice#32,StockCode#33,Description#34,Quantity#35,InvoiceDate#36,Price#37,Customer ID#38,Country#39,Year#40] Batched: true, DataFilters: [], Format: Parquet, Location: InMemoryFileIndex(1 paths)[file:/Users/marwanamr/Mini project2/data/parquet/online_retail_II], PartitionFilters: [isnotnull(Year#40), (Year#40 = 2010)], PushedFilters: [], ReadSchema: struct<Invoice:string,StockCode:string,Description:string,Quantity:int,InvoiceDate:timestamp,Pric..."
+  ]
+}

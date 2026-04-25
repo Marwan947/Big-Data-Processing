@@ -1,0 +1,63 @@
+== Parsed Logical Plan ==
+Join Cross
+:- Aggregate [sum(Revenue#70) AS total_revenue#99, count(distinct Invoice#53) AS distinct_invoices#100L, count(distinct Customer ID#59) AS distinct_customers#101L, max(Revenue#70) AS max_line_revenue#103, min(InvoiceDate#57) AS min_invoice_date#105, max(InvoiceDate#57) AS max_invoice_date#107]
+:  +- Project [Invoice#53, StockCode#54, Description#55, Quantity#56, InvoiceDate#57, Price#58, Customer ID#59, Country#60, (cast(Quantity#56 as double) * Price#58) AS Revenue#70]
+:     +- Filter (((((Quantity#56 > 0) AND (Price#58 > cast(0 as double))) AND isnotnull(Customer ID#59)) AND NOT StartsWith(Invoice#53, C)) AND ((InvoiceDate#57 >= cast(2009-12-01 00:00:00 as timestamp)) AND (InvoiceDate#57 <= cast(2011-12-09 23:59:59 as timestamp))))
+:        +- Relation [Invoice#53,StockCode#54,Description#55,Quantity#56,InvoiceDate#57,Price#58,Customer ID#59,Country#60] csv
++- Aggregate [avg(invoice_total#90) AS avg_order_value#94]
+   +- Aggregate [Invoice#53], [Invoice#53, sum(Revenue#70) AS invoice_total#90]
+      +- Project [Invoice#53, StockCode#54, Description#55, Quantity#56, InvoiceDate#57, Price#58, Customer ID#59, Country#60, (cast(Quantity#56 as double) * Price#58) AS Revenue#70]
+         +- Filter (((((Quantity#56 > 0) AND (Price#58 > cast(0 as double))) AND isnotnull(Customer ID#59)) AND NOT StartsWith(Invoice#53, C)) AND ((InvoiceDate#57 >= cast(2009-12-01 00:00:00 as timestamp)) AND (InvoiceDate#57 <= cast(2011-12-09 23:59:59 as timestamp))))
+            +- Relation [Invoice#53,StockCode#54,Description#55,Quantity#56,InvoiceDate#57,Price#58,Customer ID#59,Country#60] csv
+
+== Analyzed Logical Plan ==
+total_revenue: double, distinct_invoices: bigint, distinct_customers: bigint, max_line_revenue: double, min_invoice_date: timestamp, max_invoice_date: timestamp, avg_order_value: double
+Join Cross
+:- Aggregate [sum(Revenue#70) AS total_revenue#99, count(distinct Invoice#53) AS distinct_invoices#100L, count(distinct Customer ID#59) AS distinct_customers#101L, max(Revenue#70) AS max_line_revenue#103, min(InvoiceDate#57) AS min_invoice_date#105, max(InvoiceDate#57) AS max_invoice_date#107]
+:  +- Project [Invoice#53, StockCode#54, Description#55, Quantity#56, InvoiceDate#57, Price#58, Customer ID#59, Country#60, (cast(Quantity#56 as double) * Price#58) AS Revenue#70]
+:     +- Filter (((((Quantity#56 > 0) AND (Price#58 > cast(0 as double))) AND isnotnull(Customer ID#59)) AND NOT StartsWith(Invoice#53, C)) AND ((InvoiceDate#57 >= cast(2009-12-01 00:00:00 as timestamp)) AND (InvoiceDate#57 <= cast(2011-12-09 23:59:59 as timestamp))))
+:        +- Relation [Invoice#53,StockCode#54,Description#55,Quantity#56,InvoiceDate#57,Price#58,Customer ID#59,Country#60] csv
++- Aggregate [avg(invoice_total#90) AS avg_order_value#94]
+   +- Aggregate [Invoice#125], [Invoice#125, sum(Revenue#70) AS invoice_total#90]
+      +- Project [Invoice#125, StockCode#126, Description#127, Quantity#128, InvoiceDate#129, Price#130, Customer ID#131, Country#132, (cast(Quantity#128 as double) * Price#130) AS Revenue#70]
+         +- Filter (((((Quantity#128 > 0) AND (Price#130 > cast(0 as double))) AND isnotnull(Customer ID#131)) AND NOT StartsWith(Invoice#125, C)) AND ((InvoiceDate#129 >= cast(2009-12-01 00:00:00 as timestamp)) AND (InvoiceDate#129 <= cast(2011-12-09 23:59:59 as timestamp))))
+            +- Relation [Invoice#125,StockCode#126,Description#127,Quantity#128,InvoiceDate#129,Price#130,Customer ID#131,Country#132] csv
+
+== Optimized Logical Plan ==
+Join Cross
+:- Aggregate [first(sum(Revenue)#146, true) FILTER (WHERE (gid#141 = 0)) AS total_revenue#99, count(Invoice#142) FILTER (WHERE (gid#141 = 1)) AS distinct_invoices#100L, count(`Customer ID`#143) FILTER (WHERE (gid#141 = 2)) AS distinct_customers#101L, first(max(Revenue)#148, true) FILTER (WHERE (gid#141 = 0)) AS max_line_revenue#103, first(min(InvoiceDate)#150, true) FILTER (WHERE (gid#141 = 0)) AS min_invoice_date#105, first(max(InvoiceDate)#152, true) FILTER (WHERE (gid#141 = 0)) AS max_invoice_date#107]
+:  +- Aggregate [Invoice#142, `Customer ID`#143, gid#141], [Invoice#142, `Customer ID`#143, gid#141, sum(Revenue#144) AS sum(Revenue)#146, max(Revenue#144) AS max(Revenue)#148, min(InvoiceDate#145) AS min(InvoiceDate)#150, max(InvoiceDate#145) AS max(InvoiceDate)#152]
+:     +- Expand [[null, null, 0, Revenue#70, InvoiceDate#57], [Invoice#53, null, 1, null, null], [null, Customer ID#59, 2, null, null]], [Invoice#142, `Customer ID`#143, gid#141, Revenue#144, InvoiceDate#145]
+:        +- Project [Invoice#53, InvoiceDate#57, Customer ID#59, (cast(Quantity#56 as double) * Price#58) AS Revenue#70]
+:           +- Filter ((((isnotnull(Quantity#56) AND isnotnull(Price#58)) AND isnotnull(Invoice#53)) AND isnotnull(InvoiceDate#57)) AND (((((Quantity#56 > 0) AND (Price#58 > 0.0)) AND isnotnull(Customer ID#59)) AND NOT StartsWith(Invoice#53, C)) AND ((InvoiceDate#57 >= 2009-12-01 00:00:00) AND (InvoiceDate#57 <= 2011-12-09 23:59:59))))
+:              +- Relation [Invoice#53,StockCode#54,Description#55,Quantity#56,InvoiceDate#57,Price#58,Customer ID#59,Country#60] csv
++- Aggregate [avg(invoice_total#90) AS avg_order_value#94]
+   +- Aggregate [Invoice#125], [sum(Revenue#70) AS invoice_total#90]
+      +- Project [Invoice#125, (cast(Quantity#128 as double) * Price#130) AS Revenue#70]
+         +- Filter ((((isnotnull(Quantity#128) AND isnotnull(Price#130)) AND isnotnull(Invoice#125)) AND isnotnull(InvoiceDate#129)) AND (((((Quantity#128 > 0) AND (Price#130 > 0.0)) AND isnotnull(Customer ID#131)) AND NOT StartsWith(Invoice#125, C)) AND ((InvoiceDate#129 >= 2009-12-01 00:00:00) AND (InvoiceDate#129 <= 2011-12-09 23:59:59))))
+            +- Relation [Invoice#125,StockCode#126,Description#127,Quantity#128,InvoiceDate#129,Price#130,Customer ID#131,Country#132] csv
+
+== Physical Plan ==
+AdaptiveSparkPlan isFinalPlan=false
++- BroadcastNestedLoopJoin BuildRight, Cross
+   :- HashAggregate(keys=[], functions=[first(sum(Revenue)#146, true), count(Invoice#142), count(`Customer ID`#143), first(max(Revenue)#148, true), first(min(InvoiceDate)#150, true), first(max(InvoiceDate)#152, true)], output=[total_revenue#99, distinct_invoices#100L, distinct_customers#101L, max_line_revenue#103, min_invoice_date#105, max_invoice_date#107])
+   :  +- Exchange SinglePartition, ENSURE_REQUIREMENTS, [plan_id=81]
+   :     +- HashAggregate(keys=[], functions=[partial_first(sum(Revenue)#146, true) FILTER (WHERE (gid#141 = 0)), partial_count(Invoice#142) FILTER (WHERE (gid#141 = 1)), partial_count(`Customer ID`#143) FILTER (WHERE (gid#141 = 2)), partial_first(max(Revenue)#148, true) FILTER (WHERE (gid#141 = 0)), partial_first(min(InvoiceDate)#150, true) FILTER (WHERE (gid#141 = 0)), partial_first(max(InvoiceDate)#152, true) FILTER (WHERE (gid#141 = 0))], output=[first#164, valueSet#165, count#166L, count#167L, first#168, valueSet#169, first#170, valueSet#171, first#172, valueSet#173])
+   :        +- HashAggregate(keys=[Invoice#142, `Customer ID`#143, gid#141], functions=[sum(Revenue#144), max(Revenue#144), min(InvoiceDate#145), max(InvoiceDate#145)], output=[Invoice#142, `Customer ID`#143, gid#141, sum(Revenue)#146, max(Revenue)#148, min(InvoiceDate)#150, max(InvoiceDate)#152])
+   :           +- Exchange hashpartitioning(Invoice#142, `Customer ID`#143, gid#141, 8), ENSURE_REQUIREMENTS, [plan_id=77]
+   :              +- HashAggregate(keys=[Invoice#142, knownfloatingpointnormalized(normalizenanandzero(`Customer ID`#143)) AS `Customer ID`#143, gid#141], functions=[partial_sum(Revenue#144), partial_max(Revenue#144), partial_min(InvoiceDate#145), partial_max(InvoiceDate#145)], output=[Invoice#142, `Customer ID`#143, gid#141, sum#178, max#179, min#180, max#181])
+   :                 +- Expand [[null, null, 0, Revenue#70, InvoiceDate#57], [Invoice#53, null, 1, null, null], [null, Customer ID#59, 2, null, null]], [Invoice#142, `Customer ID`#143, gid#141, Revenue#144, InvoiceDate#145]
+   :                    +- Project [Invoice#53, InvoiceDate#57, Customer ID#59, (cast(Quantity#56 as double) * Price#58) AS Revenue#70]
+   :                       +- Filter (((((((((isnotnull(Quantity#56) AND isnotnull(Price#58)) AND isnotnull(Invoice#53)) AND isnotnull(InvoiceDate#57)) AND (Quantity#56 > 0)) AND (Price#58 > 0.0)) AND isnotnull(Customer ID#59)) AND NOT StartsWith(Invoice#53, C)) AND (InvoiceDate#57 >= 2009-12-01 00:00:00)) AND (InvoiceDate#57 <= 2011-12-09 23:59:59))
+   :                          +- FileScan csv [Invoice#53,Quantity#56,InvoiceDate#57,Price#58,Customer ID#59] Batched: false, DataFilters: [isnotnull(Quantity#56), isnotnull(Price#58), isnotnull(Invoice#53), isnotnull(InvoiceDate#57), (..., Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/Users/marwanamr/Mini project2/data/raw/online_retail_II.csv], PartitionFilters: [], PushedFilters: [IsNotNull(Quantity), IsNotNull(Price), IsNotNull(Invoice), IsNotNull(InvoiceDate), GreaterThan(Q..., ReadSchema: struct<Invoice:string,Quantity:int,InvoiceDate:timestamp,Price:double,Customer ID:double>
+   +- BroadcastExchange IdentityBroadcastMode, [plan_id=90]
+      +- HashAggregate(keys=[], functions=[avg(invoice_total#90)], output=[avg_order_value#94])
+         +- Exchange SinglePartition, ENSURE_REQUIREMENTS, [plan_id=87]
+            +- HashAggregate(keys=[], functions=[partial_avg(invoice_total#90)], output=[sum#184, count#185L])
+               +- HashAggregate(keys=[Invoice#125], functions=[sum(Revenue#70)], output=[invoice_total#90])
+                  +- Exchange hashpartitioning(Invoice#125, 8), ENSURE_REQUIREMENTS, [plan_id=83]
+                     +- HashAggregate(keys=[Invoice#125], functions=[partial_sum(Revenue#70)], output=[Invoice#125, sum#187])
+                        +- Project [Invoice#125, (cast(Quantity#128 as double) * Price#130) AS Revenue#70]
+                           +- Filter (((((((((isnotnull(Quantity#128) AND isnotnull(Price#130)) AND isnotnull(Invoice#125)) AND isnotnull(InvoiceDate#129)) AND (Quantity#128 > 0)) AND (Price#130 > 0.0)) AND isnotnull(Customer ID#131)) AND NOT StartsWith(Invoice#125, C)) AND (InvoiceDate#129 >= 2009-12-01 00:00:00)) AND (InvoiceDate#129 <= 2011-12-09 23:59:59))
+                              +- FileScan csv [Invoice#125,Quantity#128,InvoiceDate#129,Price#130,Customer ID#131] Batched: false, DataFilters: [isnotnull(Quantity#128), isnotnull(Price#130), isnotnull(Invoice#125), isnotnull(InvoiceDate#129..., Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/Users/marwanamr/Mini project2/data/raw/online_retail_II.csv], PartitionFilters: [], PushedFilters: [IsNotNull(Quantity), IsNotNull(Price), IsNotNull(Invoice), IsNotNull(InvoiceDate), GreaterThan(Q..., ReadSchema: struct<Invoice:string,Quantity:int,InvoiceDate:timestamp,Price:double,Customer ID:double>
+

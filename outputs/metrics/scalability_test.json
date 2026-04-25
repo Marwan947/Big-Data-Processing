@@ -1,0 +1,146 @@
+[
+  {
+    "query": "q05",
+    "master": "local[1]",
+    "shuffle_partitions": 4,
+    "runtime_seconds": 4.3503
+  },
+  {
+    "query": "q09",
+    "master": "local[1]",
+    "shuffle_partitions": 4,
+    "runtime_seconds": 2.4555
+  },
+  {
+    "query": "q05",
+    "master": "local[1]",
+    "shuffle_partitions": 8,
+    "runtime_seconds": 1.7986
+  },
+  {
+    "query": "q09",
+    "master": "local[1]",
+    "shuffle_partitions": 8,
+    "runtime_seconds": 2.2248
+  },
+  {
+    "query": "q05",
+    "master": "local[1]",
+    "shuffle_partitions": 50,
+    "runtime_seconds": 1.7954
+  },
+  {
+    "query": "q09",
+    "master": "local[1]",
+    "shuffle_partitions": 50,
+    "runtime_seconds": 2.2558
+  },
+  {
+    "query": "q05",
+    "master": "local[1]",
+    "shuffle_partitions": 200,
+    "runtime_seconds": 1.8037
+  },
+  {
+    "query": "q09",
+    "master": "local[1]",
+    "shuffle_partitions": 200,
+    "runtime_seconds": 2.261
+  },
+  {
+    "query": "q05",
+    "master": "local[2]",
+    "shuffle_partitions": 4,
+    "runtime_seconds": 1.0375
+  },
+  {
+    "query": "q09",
+    "master": "local[2]",
+    "shuffle_partitions": 4,
+    "runtime_seconds": 1.2798
+  },
+  {
+    "query": "q05",
+    "master": "local[2]",
+    "shuffle_partitions": 8,
+    "runtime_seconds": 0.9948
+  },
+  {
+    "query": "q09",
+    "master": "local[2]",
+    "shuffle_partitions": 8,
+    "runtime_seconds": 1.2401
+  },
+  {
+    "query": "q05",
+    "master": "local[2]",
+    "shuffle_partitions": 50,
+    "runtime_seconds": 1.0138
+  },
+  {
+    "query": "q09",
+    "master": "local[2]",
+    "shuffle_partitions": 50,
+    "runtime_seconds": 1.2597
+  },
+  {
+    "query": "q05",
+    "master": "local[2]",
+    "shuffle_partitions": 200,
+    "runtime_seconds": 0.9983
+  },
+  {
+    "query": "q09",
+    "master": "local[2]",
+    "shuffle_partitions": 200,
+    "runtime_seconds": 1.3325
+  },
+  {
+    "query": "q05",
+    "master": "local[*]",
+    "shuffle_partitions": 4,
+    "runtime_seconds": 0.5321
+  },
+  {
+    "query": "q09",
+    "master": "local[*]",
+    "shuffle_partitions": 4,
+    "runtime_seconds": 0.7156
+  },
+  {
+    "query": "q05",
+    "master": "local[*]",
+    "shuffle_partitions": 8,
+    "runtime_seconds": 0.5555
+  },
+  {
+    "query": "q09",
+    "master": "local[*]",
+    "shuffle_partitions": 8,
+    "runtime_seconds": 0.7823
+  },
+  {
+    "query": "q05",
+    "master": "local[*]",
+    "shuffle_partitions": 50,
+    "runtime_seconds": 0.6225
+  },
+  {
+    "query": "q09",
+    "master": "local[*]",
+    "shuffle_partitions": 50,
+    "runtime_seconds": 0.7595
+  },
+  {
+    "query": "q05",
+    "master": "local[*]",
+    "shuffle_partitions": 200,
+    "runtime_seconds": 0.5386
+  },
+  {
+    "query": "q09",
+    "master": "local[*]",
+    "shuffle_partitions": 200,
+    "runtime_seconds": 0.8701
+  }
+]

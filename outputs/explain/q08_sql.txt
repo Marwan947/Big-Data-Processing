@@ -1,0 +1,53 @@
+== Parsed Logical Plan ==
+'Sort ['revenue DESC NULLS LAST], true
++- 'UnresolvedHint BROADCAST, ['country_region]
+   +- 'Aggregate ['country_region.Region], ['country_region.Region AS Region#1286, 'SUM('sales.Revenue) AS revenue#1287, 'COUNT(distinct 'sales.Customer ID) AS distinct_customers#1288]
+      +- 'Join LeftOuter, ('sales.Country = 'country_region.Country)
+         :- 'UnresolvedRelation [sales], [], false
+         +- 'UnresolvedRelation [country_region], [], false
+
+== Analyzed Logical Plan ==
+Region: string, revenue: double, distinct_customers: bigint
+Sort [revenue#1287 DESC NULLS LAST], true
++- Aggregate [Region#1283], [Region#1283 AS Region#1286, sum(Revenue#1272) AS revenue#1287, count(distinct Customer ID#1261) AS distinct_customers#1288L]
+   +- Join LeftOuter, (Country#1262 = Country#1282)
+      :- SubqueryAlias sales
+      :  +- View (`sales`, [Invoice#1255,StockCode#1256,Description#1257,Quantity#1258,InvoiceDate#1259,Price#1260,Customer ID#1261,Country#1262,Revenue#1272])
+      :     +- Project [Invoice#1255, StockCode#1256, Description#1257, Quantity#1258, InvoiceDate#1259, Price#1260, Customer ID#1261, Country#1262, (cast(Quantity#1258 as double) * Price#1260) AS Revenue#1272]
+      :        +- Filter (((((Quantity#1258 > 0) AND (Price#1260 > cast(0 as double))) AND isnotnull(Customer ID#1261)) AND NOT StartsWith(Invoice#1255, C)) AND ((InvoiceDate#1259 >= cast(2009-12-01 00:00:00 as timestamp)) AND (InvoiceDate#1259 <= cast(2011-12-09 23:59:59 as timestamp))))
+      :           +- Relation [Invoice#1255,StockCode#1256,Description#1257,Quantity#1258,InvoiceDate#1259,Price#1260,Customer ID#1261,Country#1262] csv
+      +- ResolvedHint (strategy=broadcast)
+         +- SubqueryAlias country_region
+            +- View (`country_region`, [Country#1282,Region#1283])
+               +- LogicalRDD [Country#1282, Region#1283], false
+
+== Optimized Logical Plan ==
+Sort [revenue#1287 DESC NULLS LAST], true
++- Aggregate [Region#1283], [Region#1283, sum(Revenue#1272) AS revenue#1287, count(distinct Customer ID#1261) AS distinct_customers#1288L]
+   +- Project [Customer ID#1261, Revenue#1272, Region#1283]
+      +- Join LeftOuter, (Country#1262 = Country#1282), rightHint=(strategy=broadcast)
+         :- Project [Customer ID#1261, Country#1262, (cast(Quantity#1258 as double) * Price#1260) AS Revenue#1272]
+         :  +- Filter ((((isnotnull(Quantity#1258) AND isnotnull(Price#1260)) AND isnotnull(Invoice#1255)) AND isnotnull(InvoiceDate#1259)) AND (((((Quantity#1258 > 0) AND (Price#1260 > 0.0)) AND isnotnull(Customer ID#1261)) AND NOT StartsWith(Invoice#1255, C)) AND ((InvoiceDate#1259 >= 2009-12-01 00:00:00) AND (InvoiceDate#1259 <= 2011-12-09 23:59:59))))
+         :     +- Relation [Invoice#1255,StockCode#1256,Description#1257,Quantity#1258,InvoiceDate#1259,Price#1260,Customer ID#1261,Country#1262] csv
+         +- Filter isnotnull(Country#1282)
+            +- LogicalRDD [Country#1282, Region#1283], false
+
+== Physical Plan ==
+AdaptiveSparkPlan isFinalPlan=false
++- Sort [revenue#1287 DESC NULLS LAST], true, 0
+   +- Exchange rangepartitioning(revenue#1287 DESC NULLS LAST, 8), ENSURE_REQUIREMENTS, [plan_id=1046]
+      +- HashAggregate(keys=[Region#1283], functions=[sum(Revenue#1272), count(distinct Customer ID#1294)], output=[Region#1283, revenue#1287, distinct_customers#1288L])
+         +- Exchange hashpartitioning(Region#1283, 8), ENSURE_REQUIREMENTS, [plan_id=1043]
+            +- HashAggregate(keys=[Region#1283], functions=[merge_sum(Revenue#1272), partial_count(distinct Customer ID#1294)], output=[Region#1283, sum#1296, count#1299L])
+               +- HashAggregate(keys=[Region#1283, Customer ID#1294], functions=[merge_sum(Revenue#1272)], output=[Region#1283, Customer ID#1294, sum#1296])
+                  +- Exchange hashpartitioning(Region#1283, Customer ID#1294, 8), ENSURE_REQUIREMENTS, [plan_id=1039]
+                     +- HashAggregate(keys=[Region#1283, knownfloatingpointnormalized(normalizenanandzero(Customer ID#1261)) AS Customer ID#1294], functions=[partial_sum(Revenue#1272)], output=[Region#1283, Customer ID#1294, sum#1296])
+                        +- Project [Customer ID#1261, Revenue#1272, Region#1283]
+                           +- BroadcastHashJoin [Country#1262], [Country#1282], LeftOuter, BuildRight, false
+                              :- Project [Customer ID#1261, Country#1262, (cast(Quantity#1258 as double) * Price#1260) AS Revenue#1272]
+                              :  +- Filter (((((((((isnotnull(Quantity#1258) AND isnotnull(Price#1260)) AND isnotnull(Invoice#1255)) AND isnotnull(InvoiceDate#1259)) AND (Quantity#1258 > 0)) AND (Price#1260 > 0.0)) AND isnotnull(Customer ID#1261)) AND NOT StartsWith(Invoice#1255, C)) AND (InvoiceDate#1259 >= 2009-12-01 00:00:00)) AND (InvoiceDate#1259 <= 2011-12-09 23:59:59))
+                              :     +- FileScan csv [Invoice#1255,Quantity#1258,InvoiceDate#1259,Price#1260,Customer ID#1261,Country#1262] Batched: false, DataFilters: [isnotnull(Quantity#1258), isnotnull(Price#1260), isnotnull(Invoice#1255), isnotnull(InvoiceDate#..., Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/Users/marwanamr/Mini project2/data/raw/online_retail_II.csv], PartitionFilters: [], PushedFilters: [IsNotNull(Quantity), IsNotNull(Price), IsNotNull(Invoice), IsNotNull(InvoiceDate), GreaterThan(Q..., ReadSchema: struct<Invoice:string,Quantity:int,InvoiceDate:timestamp,Price:double,Customer ID:double,Country:...
+                              +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, string, false]),false), [plan_id=1034]
+                                 +- Filter isnotnull(Country#1282)
+                                    +- Scan ExistingRDD[Country#1282,Region#1283]
+

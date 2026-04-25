@@ -1,0 +1,23 @@
+== Parsed Logical Plan ==
+'Project [*, ('Quantity * 'Price) AS Revenue#43]
++- 'Filter (((('Quantity > 0) AND ('Price > 0)) AND isnotnull('Customer ID)) AND (NOT 'Invoice LIKE C% AND (('InvoiceDate >= 2009-12-01 00:00:00) AND ('InvoiceDate <= 2011-12-09 23:59:59))))
+   +- 'UnresolvedRelation [raw], [], false
+
+== Analyzed Logical Plan ==
+Invoice: string, StockCode: string, Description: string, Quantity: int, InvoiceDate: timestamp, Price: double, Customer ID: double, Country: string, Revenue: double
+Project [Invoice#27, StockCode#28, Description#29, Quantity#30, InvoiceDate#31, Price#32, Customer ID#33, Country#34, (cast(Quantity#30 as double) * Price#32) AS Revenue#43]
++- Filter ((((Quantity#30 > 0) AND (Price#32 > cast(0 as double))) AND isnotnull(Customer ID#33)) AND (NOT Invoice#27 LIKE C% AND ((InvoiceDate#31 >= 2009-12-01 00:00:00) AND (InvoiceDate#31 <= 2011-12-09 23:59:59))))
+   +- SubqueryAlias raw
+      +- View (`raw`, [Invoice#27,StockCode#28,Description#29,Quantity#30,InvoiceDate#31,Price#32,Customer ID#33,Country#34])
+         +- Relation [Invoice#27,StockCode#28,Description#29,Quantity#30,InvoiceDate#31,Price#32,Customer ID#33,Country#34] csv
+
+== Optimized Logical Plan ==
+Project [Invoice#27, StockCode#28, Description#29, Quantity#30, InvoiceDate#31, Price#32, Customer ID#33, Country#34, (cast(Quantity#30 as double) * Price#32) AS Revenue#43]
++- Filter ((((isnotnull(Quantity#30) AND isnotnull(Price#32)) AND isnotnull(Invoice#27)) AND isnotnull(InvoiceDate#31)) AND ((((Quantity#30 > 0) AND (Price#32 > 0.0)) AND isnotnull(Customer ID#33)) AND (NOT StartsWith(Invoice#27, C) AND ((InvoiceDate#31 >= 2009-12-01 00:00:00) AND (InvoiceDate#31 <= 2011-12-09 23:59:59)))))
+   +- Relation [Invoice#27,StockCode#28,Description#29,Quantity#30,InvoiceDate#31,Price#32,Customer ID#33,Country#34] csv
+
+== Physical Plan ==
+*(1) Project [Invoice#27, StockCode#28, Description#29, Quantity#30, InvoiceDate#31, Price#32, Customer ID#33, Country#34, (cast(Quantity#30 as double) * Price#32) AS Revenue#43]
++- *(1) Filter (((((((((isnotnull(Quantity#30) AND isnotnull(Price#32)) AND isnotnull(Invoice#27)) AND isnotnull(InvoiceDate#31)) AND (Quantity#30 > 0)) AND (Price#32 > 0.0)) AND isnotnull(Customer ID#33)) AND NOT StartsWith(Invoice#27, C)) AND (InvoiceDate#31 >= 2009-12-01 00:00:00)) AND (InvoiceDate#31 <= 2011-12-09 23:59:59))
+   +- FileScan csv [Invoice#27,StockCode#28,Description#29,Quantity#30,InvoiceDate#31,Price#32,Customer ID#33,Country#34] Batched: false, DataFilters: [isnotnull(Quantity#30), isnotnull(Price#32), isnotnull(Invoice#27), isnotnull(InvoiceDate#31), (..., Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/Users/marwanamr/Mini project2/data/raw/online_retail_II.csv], PartitionFilters: [], PushedFilters: [IsNotNull(Quantity), IsNotNull(Price), IsNotNull(Invoice), IsNotNull(InvoiceDate), GreaterThan(Q..., ReadSchema: struct<Invoice:string,StockCode:string,Description:string,Quantity:int,InvoiceDate:timestamp,Pric...
+

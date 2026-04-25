@@ -1,6 +1,11 @@
 # macOS
 .DS_Store
 
+# Editor / agent metadata
+.claude/
+.idea/
+.vscode/
+
 # Python
 __pycache__/
 *.py[cod]
@@ -15,8 +20,17 @@ derby.log
 *.crc
 .spark-staging/
 
-# Project-specific
+# Project-specific — datasets and regenerable artifacts.
 data/raw/
 data/parquet/
-outputs/
-!outputs/.gitkeep
+
+# Outputs: keep deliverable artifacts in git, ignore everything else.
+outputs/*
+!outputs/explain/
+!outputs/plots/
+!outputs/metrics/
+outputs/metrics/run_all.log
+outputs/metrics/spark-events/
+outputs/intermediate/
+outputs/results/
+outputs/spark-events/

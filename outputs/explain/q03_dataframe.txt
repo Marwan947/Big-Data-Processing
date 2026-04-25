@@ -1,0 +1,40 @@
+== Parsed Logical Plan ==
+'Sort ['revenue DESC NULLS LAST], true
++- Aggregate [Country#628, Year#648, Month#659], [Country#628, Year#648, Month#659, sum(Revenue#638) AS revenue#683, count(distinct Invoice#621) AS order_count#684L]
+   +- Project [Invoice#621, StockCode#622, Description#623, Quantity#624, InvoiceDate#625, Price#626, Customer ID#627, Country#628, Revenue#638, Year#648, month(cast(InvoiceDate#625 as date)) AS Month#659]
+      +- Project [Invoice#621, StockCode#622, Description#623, Quantity#624, InvoiceDate#625, Price#626, Customer ID#627, Country#628, Revenue#638, year(cast(InvoiceDate#625 as date)) AS Year#648]
+         +- Project [Invoice#621, StockCode#622, Description#623, Quantity#624, InvoiceDate#625, Price#626, Customer ID#627, Country#628, (cast(Quantity#624 as double) * Price#626) AS Revenue#638]
+            +- Filter (((((Quantity#624 > 0) AND (Price#626 > cast(0 as double))) AND isnotnull(Customer ID#627)) AND NOT StartsWith(Invoice#621, C)) AND ((InvoiceDate#625 >= cast(2009-12-01 00:00:00 as timestamp)) AND (InvoiceDate#625 <= cast(2011-12-09 23:59:59 as timestamp))))
+               +- Relation [Invoice#621,StockCode#622,Description#623,Quantity#624,InvoiceDate#625,Price#626,Customer ID#627,Country#628] csv
+
+== Analyzed Logical Plan ==
+Country: string, Year: int, Month: int, revenue: double, order_count: bigint
+Sort [revenue#683 DESC NULLS LAST], true
++- Aggregate [Country#628, Year#648, Month#659], [Country#628, Year#648, Month#659, sum(Revenue#638) AS revenue#683, count(distinct Invoice#621) AS order_count#684L]
+   +- Project [Invoice#621, StockCode#622, Description#623, Quantity#624, InvoiceDate#625, Price#626, Customer ID#627, Country#628, Revenue#638, Year#648, month(cast(InvoiceDate#625 as date)) AS Month#659]
+      +- Project [Invoice#621, StockCode#622, Description#623, Quantity#624, InvoiceDate#625, Price#626, Customer ID#627, Country#628, Revenue#638, year(cast(InvoiceDate#625 as date)) AS Year#648]
+         +- Project [Invoice#621, StockCode#622, Description#623, Quantity#624, InvoiceDate#625, Price#626, Customer ID#627, Country#628, (cast(Quantity#624 as double) * Price#626) AS Revenue#638]
+            +- Filter (((((Quantity#624 > 0) AND (Price#626 > cast(0 as double))) AND isnotnull(Customer ID#627)) AND NOT StartsWith(Invoice#621, C)) AND ((InvoiceDate#625 >= cast(2009-12-01 00:00:00 as timestamp)) AND (InvoiceDate#625 <= cast(2011-12-09 23:59:59 as timestamp))))
+               +- Relation [Invoice#621,StockCode#622,Description#623,Quantity#624,InvoiceDate#625,Price#626,Customer ID#627,Country#628] csv
+
+== Optimized Logical Plan ==
+Sort [revenue#683 DESC NULLS LAST], true
++- Aggregate [Country#628, Year#648, Month#659], [Country#628, Year#648, Month#659, sum(Revenue#638) AS revenue#683, count(distinct Invoice#621) AS order_count#684L]
+   +- Project [Invoice#621, Country#628, (cast(Quantity#624 as double) * Price#626) AS Revenue#638, year(cast(InvoiceDate#625 as date)) AS Year#648, month(cast(InvoiceDate#625 as date)) AS Month#659]
+      +- Filter ((((isnotnull(Quantity#624) AND isnotnull(Price#626)) AND isnotnull(Invoice#621)) AND isnotnull(InvoiceDate#625)) AND (((((Quantity#624 > 0) AND (Price#626 > 0.0)) AND isnotnull(Customer ID#627)) AND NOT StartsWith(Invoice#621, C)) AND ((InvoiceDate#625 >= 2009-12-01 00:00:00) AND (InvoiceDate#625 <= 2011-12-09 23:59:59))))
+         +- Relation [Invoice#621,StockCode#622,Description#623,Quantity#624,InvoiceDate#625,Price#626,Customer ID#627,Country#628] csv
+
+== Physical Plan ==
+AdaptiveSparkPlan isFinalPlan=false
++- Sort [revenue#683 DESC NULLS LAST], true, 0
+   +- Exchange rangepartitioning(revenue#683 DESC NULLS LAST, 8), ENSURE_REQUIREMENTS, [plan_id=454]
+      +- HashAggregate(keys=[Country#628, Year#648, Month#659], functions=[sum(Revenue#638), count(distinct Invoice#621)], output=[Country#628, Year#648, Month#659, revenue#683, order_count#684L])
+         +- Exchange hashpartitioning(Country#628, Year#648, Month#659, 8), ENSURE_REQUIREMENTS, [plan_id=451]
+            +- HashAggregate(keys=[Country#628, Year#648, Month#659], functions=[merge_sum(Revenue#638), partial_count(distinct Invoice#621)], output=[Country#628, Year#648, Month#659, sum#692, count#695L])
+               +- HashAggregate(keys=[Country#628, Year#648, Month#659, Invoice#621], functions=[merge_sum(Revenue#638)], output=[Country#628, Year#648, Month#659, Invoice#621, sum#692])
+                  +- Exchange hashpartitioning(Country#628, Year#648, Month#659, Invoice#621, 8), ENSURE_REQUIREMENTS, [plan_id=447]
+                     +- HashAggregate(keys=[Country#628, Year#648, Month#659, Invoice#621], functions=[partial_sum(Revenue#638)], output=[Country#628, Year#648, Month#659, Invoice#621, sum#692])
+                        +- Project [Invoice#621, Country#628, (cast(Quantity#624 as double) * Price#626) AS Revenue#638, year(cast(InvoiceDate#625 as date)) AS Year#648, month(cast(InvoiceDate#625 as date)) AS Month#659]
+                           +- Filter (((((((((isnotnull(Quantity#624) AND isnotnull(Price#626)) AND isnotnull(Invoice#621)) AND isnotnull(InvoiceDate#625)) AND (Quantity#624 > 0)) AND (Price#626 > 0.0)) AND isnotnull(Customer ID#627)) AND NOT StartsWith(Invoice#621, C)) AND (InvoiceDate#625 >= 2009-12-01 00:00:00)) AND (InvoiceDate#625 <= 2011-12-09 23:59:59))
+                              +- FileScan csv [Invoice#621,Quantity#624,InvoiceDate#625,Price#626,Customer ID#627,Country#628] Batched: false, DataFilters: [isnotnull(Quantity#624), isnotnull(Price#626), isnotnull(Invoice#621), isnotnull(InvoiceDate#625..., Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/Users/marwanamr/Mini project2/data/raw/online_retail_II.csv], PartitionFilters: [], PushedFilters: [IsNotNull(Quantity), IsNotNull(Price), IsNotNull(Invoice), IsNotNull(InvoiceDate), GreaterThan(Q..., ReadSchema: struct<Invoice:string,Quantity:int,InvoiceDate:timestamp,Price:double,Customer ID:double,Country:...
+

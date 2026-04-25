@@ -1,0 +1,53 @@
+== Parsed Logical Plan ==
+'Sort ['Country ASC NULLS FIRST, 'rank_in_country ASC NULLS FIRST], true
++- Filter (rank_in_country#976 <= 5)
+   +- Project [Country#941, Customer ID#940, total_spend#971, rank_in_country#976]
+      +- Project [Country#941, Customer ID#940, total_spend#971, rank_in_country#976, rank_in_country#976]
+         +- Window [row_number() windowspecdefinition(Country#941, total_spend#971 DESC NULLS LAST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS rank_in_country#976], [Country#941], [total_spend#971 DESC NULLS LAST]
+            +- Project [Country#941, Customer ID#940, total_spend#971]
+               +- Aggregate [Country#941, Customer ID#940], [Country#941, Customer ID#940, sum(Revenue#951) AS total_spend#971]
+                  +- Project [Invoice#934, StockCode#935, Description#936, Quantity#937, InvoiceDate#938, Price#939, Customer ID#940, Country#941, (cast(Quantity#937 as double) * Price#939) AS Revenue#951]
+                     +- Filter (((((Quantity#937 > 0) AND (Price#939 > cast(0 as double))) AND isnotnull(Customer ID#940)) AND NOT StartsWith(Invoice#934, C)) AND ((InvoiceDate#938 >= cast(2009-12-01 00:00:00 as timestamp)) AND (InvoiceDate#938 <= cast(2011-12-09 23:59:59 as timestamp))))
+                        +- Relation [Invoice#934,StockCode#935,Description#936,Quantity#937,InvoiceDate#938,Price#939,Customer ID#940,Country#941] csv
+
+== Analyzed Logical Plan ==
+Country: string, Customer ID: double, total_spend: double, rank_in_country: int
+Sort [Country#941 ASC NULLS FIRST, rank_in_country#976 ASC NULLS FIRST], true
++- Filter (rank_in_country#976 <= 5)
+   +- Project [Country#941, Customer ID#940, total_spend#971, rank_in_country#976]
+      +- Project [Country#941, Customer ID#940, total_spend#971, rank_in_country#976, rank_in_country#976]
+         +- Window [row_number() windowspecdefinition(Country#941, total_spend#971 DESC NULLS LAST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS rank_in_country#976], [Country#941], [total_spend#971 DESC NULLS LAST]
+            +- Project [Country#941, Customer ID#940, total_spend#971]
+               +- Aggregate [Country#941, Customer ID#940], [Country#941, Customer ID#940, sum(Revenue#951) AS total_spend#971]
+                  +- Project [Invoice#934, StockCode#935, Description#936, Quantity#937, InvoiceDate#938, Price#939, Customer ID#940, Country#941, (cast(Quantity#937 as double) * Price#939) AS Revenue#951]
+                     +- Filter (((((Quantity#937 > 0) AND (Price#939 > cast(0 as double))) AND isnotnull(Customer ID#940)) AND NOT StartsWith(Invoice#934, C)) AND ((InvoiceDate#938 >= cast(2009-12-01 00:00:00 as timestamp)) AND (InvoiceDate#938 <= cast(2011-12-09 23:59:59 as timestamp))))
+                        +- Relation [Invoice#934,StockCode#935,Description#936,Quantity#937,InvoiceDate#938,Price#939,Customer ID#940,Country#941] csv
+
+== Optimized Logical Plan ==
+Sort [Country#941 ASC NULLS FIRST, rank_in_country#976 ASC NULLS FIRST], true
++- Filter (rank_in_country#976 <= 5)
+   +- Window [row_number() windowspecdefinition(Country#941, total_spend#971 DESC NULLS LAST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS rank_in_country#976], [Country#941], [total_spend#971 DESC NULLS LAST]
+      +- WindowGroupLimit [Country#941], [total_spend#971 DESC NULLS LAST], row_number(), 5
+         +- Aggregate [Country#941, Customer ID#940], [Country#941, Customer ID#940, sum(Revenue#951) AS total_spend#971]
+            +- Project [Customer ID#940, Country#941, (cast(Quantity#937 as double) * Price#939) AS Revenue#951]
+               +- Filter ((((isnotnull(Quantity#937) AND isnotnull(Price#939)) AND isnotnull(Invoice#934)) AND isnotnull(InvoiceDate#938)) AND (((((Quantity#937 > 0) AND (Price#939 > 0.0)) AND isnotnull(Customer ID#940)) AND NOT StartsWith(Invoice#934, C)) AND ((InvoiceDate#938 >= 2009-12-01 00:00:00) AND (InvoiceDate#938 <= 2011-12-09 23:59:59))))
+                  +- Relation [Invoice#934,StockCode#935,Description#936,Quantity#937,InvoiceDate#938,Price#939,Customer ID#940,Country#941] csv
+
+== Physical Plan ==
+AdaptiveSparkPlan isFinalPlan=false
++- Sort [Country#941 ASC NULLS FIRST, rank_in_country#976 ASC NULLS FIRST], true, 0
+   +- Exchange rangepartitioning(Country#941 ASC NULLS FIRST, rank_in_country#976 ASC NULLS FIRST, 8), ENSURE_REQUIREMENTS, [plan_id=647]
+      +- Filter (rank_in_country#976 <= 5)
+         +- Window [row_number() windowspecdefinition(Country#941, total_spend#971 DESC NULLS LAST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS rank_in_country#976], [Country#941], [total_spend#971 DESC NULLS LAST]
+            +- WindowGroupLimit [Country#941], [total_spend#971 DESC NULLS LAST], row_number(), 5, Final
+               +- Sort [Country#941 ASC NULLS FIRST, total_spend#971 DESC NULLS LAST], false, 0
+                  +- Exchange hashpartitioning(Country#941, 8), ENSURE_REQUIREMENTS, [plan_id=641]
+                     +- WindowGroupLimit [Country#941], [total_spend#971 DESC NULLS LAST], row_number(), 5, Partial
+                        +- Sort [Country#941 ASC NULLS FIRST, total_spend#971 DESC NULLS LAST], false, 0
+                           +- HashAggregate(keys=[Country#941, Customer ID#940], functions=[sum(Revenue#951)], output=[Country#941, Customer ID#940, total_spend#971])
+                              +- Exchange hashpartitioning(Country#941, Customer ID#940, 8), ENSURE_REQUIREMENTS, [plan_id=635]
+                                 +- HashAggregate(keys=[Country#941, knownfloatingpointnormalized(normalizenanandzero(Customer ID#940)) AS Customer ID#940], functions=[partial_sum(Revenue#951)], output=[Country#941, Customer ID#940, sum#982])
+                                    +- Project [Customer ID#940, Country#941, (cast(Quantity#937 as double) * Price#939) AS Revenue#951]
+                                       +- Filter (((((((((isnotnull(Quantity#937) AND isnotnull(Price#939)) AND isnotnull(Invoice#934)) AND isnotnull(InvoiceDate#938)) AND (Quantity#937 > 0)) AND (Price#939 > 0.0)) AND isnotnull(Customer ID#940)) AND NOT StartsWith(Invoice#934, C)) AND (InvoiceDate#938 >= 2009-12-01 00:00:00)) AND (InvoiceDate#938 <= 2011-12-09 23:59:59))
+                                          +- FileScan csv [Invoice#934,Quantity#937,InvoiceDate#938,Price#939,Customer ID#940,Country#941] Batched: false, DataFilters: [isnotnull(Quantity#937), isnotnull(Price#939), isnotnull(Invoice#934), isnotnull(InvoiceDate#938..., Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/Users/marwanamr/Mini project2/data/raw/online_retail_II.csv], PartitionFilters: [], PushedFilters: [IsNotNull(Quantity), IsNotNull(Price), IsNotNull(Invoice), IsNotNull(InvoiceDate), GreaterThan(Q..., ReadSchema: struct<Invoice:string,Quantity:int,InvoiceDate:timestamp,Price:double,Customer ID:double,Country:...
+

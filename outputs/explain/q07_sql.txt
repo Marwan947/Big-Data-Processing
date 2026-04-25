@@ -1,0 +1,91 @@
+== Parsed Logical Plan ==
+CTE [customer_totals]
+:  +- 'SubqueryAlias customer_totals
+:     +- 'Aggregate ['Customer ID], ['Customer ID AS customer_id#1121, 'SUM('Revenue) AS total_spend#1122]
+:        +- 'UnresolvedRelation [sales], [], false
++- 'Sort ['total_spend DESC NULLS LAST], true
+   +- 'Project ['customer_id, 'total_spend, scalar-subquery#1118 [] AS avg_spend_baseline#1119]
+      :  +- 'Project [unresolvedalias('AVG('total_spend), None)]
+      :     +- 'UnresolvedRelation [customer_totals], [], false
+      +- 'Filter ('total_spend > scalar-subquery#1120 [])
+         :  +- 'Project [unresolvedalias('AVG('total_spend), None)]
+         :     +- 'UnresolvedRelation [customer_totals], [], false
+         +- 'UnresolvedRelation [customer_totals], [], false
+
+== Analyzed Logical Plan ==
+customer_id: double, total_spend: double, avg_spend_baseline: double
+WithCTE
+:- CTERelationDef 5, false
+:  +- SubqueryAlias customer_totals
+:     +- Aggregate [Customer ID#1097], [Customer ID#1097 AS customer_id#1121, sum(Revenue#1108) AS total_spend#1122]
+:        +- SubqueryAlias sales
+:           +- View (`sales`, [Invoice#1091,StockCode#1092,Description#1093,Quantity#1094,InvoiceDate#1095,Price#1096,Customer ID#1097,Country#1098,Revenue#1108])
+:              +- Project [Invoice#1091, StockCode#1092, Description#1093, Quantity#1094, InvoiceDate#1095, Price#1096, Customer ID#1097, Country#1098, (cast(Quantity#1094 as double) * Price#1096) AS Revenue#1108]
+:                 +- Filter (((((Quantity#1094 > 0) AND (Price#1096 > cast(0 as double))) AND isnotnull(Customer ID#1097)) AND NOT StartsWith(Invoice#1091, C)) AND ((InvoiceDate#1095 >= cast(2009-12-01 00:00:00 as timestamp)) AND (InvoiceDate#1095 <= cast(2011-12-09 23:59:59 as timestamp))))
+:                    +- Relation [Invoice#1091,StockCode#1092,Description#1093,Quantity#1094,InvoiceDate#1095,Price#1096,Customer ID#1097,Country#1098] csv
++- Sort [total_spend#1122 DESC NULLS LAST], true
+   +- Project [customer_id#1121, total_spend#1122, scalar-subquery#1118 [] AS avg_spend_baseline#1119]
+      :  +- Aggregate [avg(total_spend#1127) AS avg(total_spend)#1131]
+      :     +- SubqueryAlias customer_totals
+      :        +- CTERelationRef 5, true, [customer_id#1126, total_spend#1127], false
+      +- Filter (total_spend#1122 > scalar-subquery#1120 [])
+         :  +- Aggregate [avg(total_spend#1125) AS avg(total_spend)#1129]
+         :     +- SubqueryAlias customer_totals
+         :        +- CTERelationRef 5, true, [customer_id#1124, total_spend#1125], false
+         +- SubqueryAlias customer_totals
+            +- CTERelationRef 5, true, [customer_id#1121, total_spend#1122], false
+
+== Optimized Logical Plan ==
+Sort [total_spend#1122 DESC NULLS LAST], true
++- Project [customer_id#1121, total_spend#1122, scalar-subquery#1118 [] AS avg_spend_baseline#1119]
+   :  +- Aggregate [avg(total_spend#1125) AS avg(total_spend)#1129]
+   :     +- Aggregate [Customer ID#1161], [sum(Revenue#1108) AS total_spend#1125]
+   :        +- Project [Customer ID#1161, (cast(Quantity#1158 as double) * Price#1160) AS Revenue#1108]
+   :           +- Filter ((((isnotnull(Quantity#1158) AND isnotnull(Price#1160)) AND isnotnull(Invoice#1155)) AND isnotnull(InvoiceDate#1159)) AND (((((Quantity#1158 > 0) AND (Price#1160 > 0.0)) AND isnotnull(Customer ID#1161)) AND NOT StartsWith(Invoice#1155, C)) AND ((InvoiceDate#1159 >= 2009-12-01 00:00:00) AND (InvoiceDate#1159 <= 2011-12-09 23:59:59))))
+   :              +- Relation [Invoice#1155,StockCode#1156,Description#1157,Quantity#1158,InvoiceDate#1159,Price#1160,Customer ID#1161,Country#1162] csv
+   +- Filter (isnotnull(total_spend#1122) AND (total_spend#1122 > scalar-subquery#1120 []))
+      :  +- Aggregate [avg(total_spend#1125) AS avg(total_spend)#1129]
+      :     +- Aggregate [Customer ID#1161], [sum(Revenue#1108) AS total_spend#1125]
+      :        +- Project [Customer ID#1161, (cast(Quantity#1158 as double) * Price#1160) AS Revenue#1108]
+      :           +- Filter ((((isnotnull(Quantity#1158) AND isnotnull(Price#1160)) AND isnotnull(Invoice#1155)) AND isnotnull(InvoiceDate#1159)) AND (((((Quantity#1158 > 0) AND (Price#1160 > 0.0)) AND isnotnull(Customer ID#1161)) AND NOT StartsWith(Invoice#1155, C)) AND ((InvoiceDate#1159 >= 2009-12-01 00:00:00) AND (InvoiceDate#1159 <= 2011-12-09 23:59:59))))
+      :              +- Relation [Invoice#1155,StockCode#1156,Description#1157,Quantity#1158,InvoiceDate#1159,Price#1160,Customer ID#1161,Country#1162] csv
+      +- Aggregate [Customer ID#1097], [Customer ID#1097 AS customer_id#1121, sum(Revenue#1108) AS total_spend#1122]
+         +- Project [Customer ID#1097, (cast(Quantity#1094 as double) * Price#1096) AS Revenue#1108]
+            +- Filter ((((isnotnull(Quantity#1094) AND isnotnull(Price#1096)) AND isnotnull(Invoice#1091)) AND isnotnull(InvoiceDate#1095)) AND (((((Quantity#1094 > 0) AND (Price#1096 > 0.0)) AND isnotnull(Customer ID#1097)) AND NOT StartsWith(Invoice#1091, C)) AND ((InvoiceDate#1095 >= 2009-12-01 00:00:00) AND (InvoiceDate#1095 <= 2011-12-09 23:59:59))))
+               +- Relation [Invoice#1091,StockCode#1092,Description#1093,Quantity#1094,InvoiceDate#1095,Price#1096,Customer ID#1097,Country#1098] csv
+
+== Physical Plan ==
+AdaptiveSparkPlan isFinalPlan=false
++- Sort [total_spend#1122 DESC NULLS LAST], true, 0
+   +- Exchange rangepartitioning(total_spend#1122 DESC NULLS LAST, 8), ENSURE_REQUIREMENTS, [plan_id=930]
+      +- Project [customer_id#1121, total_spend#1122, Subquery subquery#1118, [id=#904] AS avg_spend_baseline#1119]
+         :  +- Subquery subquery#1118, [id=#904]
+         :     +- AdaptiveSparkPlan isFinalPlan=false
+         :        +- HashAggregate(keys=[], functions=[avg(total_spend#1125)], output=[avg(total_spend)#1129])
+         :           +- Exchange SinglePartition, ENSURE_REQUIREMENTS, [plan_id=881]
+         :              +- HashAggregate(keys=[], functions=[partial_avg(total_spend#1125)], output=[sum#1179, count#1180L])
+         :                 +- HashAggregate(keys=[Customer ID#1161], functions=[sum(Revenue#1108)], output=[total_spend#1125])
+         :                    +- Exchange hashpartitioning(Customer ID#1161, 8), ENSURE_REQUIREMENTS, [plan_id=877]
+         :                       +- HashAggregate(keys=[knownfloatingpointnormalized(normalizenanandzero(Customer ID#1161)) AS Customer ID#1161], functions=[partial_sum(Revenue#1108)], output=[Customer ID#1161, sum#1176])
+         :                          +- Project [Customer ID#1161, (cast(Quantity#1158 as double) * Price#1160) AS Revenue#1108]
+         :                             +- Filter (((((((((isnotnull(Quantity#1158) AND isnotnull(Price#1160)) AND isnotnull(Invoice#1155)) AND isnotnull(InvoiceDate#1159)) AND (Quantity#1158 > 0)) AND (Price#1160 > 0.0)) AND isnotnull(Customer ID#1161)) AND NOT StartsWith(Invoice#1155, C)) AND (InvoiceDate#1159 >= 2009-12-01 00:00:00)) AND (InvoiceDate#1159 <= 2011-12-09 23:59:59))
+         :                                +- FileScan csv [Invoice#1155,Quantity#1158,InvoiceDate#1159,Price#1160,Customer ID#1161] Batched: false, DataFilters: [isnotnull(Quantity#1158), isnotnull(Price#1160), isnotnull(Invoice#1155), isnotnull(InvoiceDate#..., Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/Users/marwanamr/Mini project2/data/raw/online_retail_II.csv], PartitionFilters: [], PushedFilters: [IsNotNull(Quantity), IsNotNull(Price), IsNotNull(Invoice), IsNotNull(InvoiceDate), GreaterThan(Q..., ReadSchema: struct<Invoice:string,Quantity:int,InvoiceDate:timestamp,Price:double,Customer ID:double>
+         +- Filter (isnotnull(total_spend#1122) AND (total_spend#1122 > Subquery subquery#1120, [id=#906]))
+            :  +- Subquery subquery#1120, [id=#906]
+            :     +- AdaptiveSparkPlan isFinalPlan=false
+            :        +- HashAggregate(keys=[], functions=[avg(total_spend#1125)], output=[avg(total_spend)#1129])
+            :           +- Exchange SinglePartition, ENSURE_REQUIREMENTS, [plan_id=902]
+            :              +- HashAggregate(keys=[], functions=[partial_avg(total_spend#1125)], output=[sum#1179, count#1180L])
+            :                 +- HashAggregate(keys=[Customer ID#1161], functions=[sum(Revenue#1108)], output=[total_spend#1125])
+            :                    +- Exchange hashpartitioning(Customer ID#1161, 8), ENSURE_REQUIREMENTS, [plan_id=898]
+            :                       +- HashAggregate(keys=[knownfloatingpointnormalized(normalizenanandzero(Customer ID#1161)) AS Customer ID#1161], functions=[partial_sum(Revenue#1108)], output=[Customer ID#1161, sum#1176])
+            :                          +- Project [Customer ID#1161, (cast(Quantity#1158 as double) * Price#1160) AS Revenue#1108]
+            :                             +- Filter (((((((((isnotnull(Quantity#1158) AND isnotnull(Price#1160)) AND isnotnull(Invoice#1155)) AND isnotnull(InvoiceDate#1159)) AND (Quantity#1158 > 0)) AND (Price#1160 > 0.0)) AND isnotnull(Customer ID#1161)) AND NOT StartsWith(Invoice#1155, C)) AND (InvoiceDate#1159 >= 2009-12-01 00:00:00)) AND (InvoiceDate#1159 <= 2011-12-09 23:59:59))
+            :                                +- FileScan csv [Invoice#1155,Quantity#1158,InvoiceDate#1159,Price#1160,Customer ID#1161] Batched: false, DataFilters: [isnotnull(Quantity#1158), isnotnull(Price#1160), isnotnull(Invoice#1155), isnotnull(InvoiceDate#..., Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/Users/marwanamr/Mini project2/data/raw/online_retail_II.csv], PartitionFilters: [], PushedFilters: [IsNotNull(Quantity), IsNotNull(Price), IsNotNull(Invoice), IsNotNull(InvoiceDate), GreaterThan(Q..., ReadSchema: struct<Invoice:string,Quantity:int,InvoiceDate:timestamp,Price:double,Customer ID:double>
+            +- HashAggregate(keys=[Customer ID#1097], functions=[sum(Revenue#1108)], output=[customer_id#1121, total_spend#1122])
+               +- Exchange hashpartitioning(Customer ID#1097, 8), ENSURE_REQUIREMENTS, [plan_id=911]
+                  +- HashAggregate(keys=[knownfloatingpointnormalized(normalizenanandzero(Customer ID#1097)) AS Customer ID#1097], functions=[partial_sum(Revenue#1108)], output=[Customer ID#1097, sum#1176])
+                     +- Project [Customer ID#1097, (cast(Quantity#1094 as double) * Price#1096) AS Revenue#1108]
+                        +- Filter (((((((((isnotnull(Quantity#1094) AND isnotnull(Price#1096)) AND isnotnull(Invoice#1091)) AND isnotnull(InvoiceDate#1095)) AND (Quantity#1094 > 0)) AND (Price#1096 > 0.0)) AND isnotnull(Customer ID#1097)) AND NOT StartsWith(Invoice#1091, C)) AND (InvoiceDate#1095 >= 2009-12-01 00:00:00)) AND (InvoiceDate#1095 <= 2011-12-09 23:59:59))
+                           +- FileScan csv [Invoice#1091,Quantity#1094,InvoiceDate#1095,Price#1096,Customer ID#1097] Batched: false, DataFilters: [isnotnull(Quantity#1094), isnotnull(Price#1096), isnotnull(Invoice#1091), isnotnull(InvoiceDate#..., Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/Users/marwanamr/Mini project2/data/raw/online_retail_II.csv], PartitionFilters: [], PushedFilters: [IsNotNull(Quantity), IsNotNull(Price), IsNotNull(Invoice), IsNotNull(InvoiceDate), GreaterThan(Q..., ReadSchema: struct<Invoice:string,Quantity:int,InvoiceDate:timestamp,Price:double,Customer ID:double>
+

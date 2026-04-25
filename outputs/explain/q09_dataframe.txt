@@ -1,0 +1,71 @@
+== Parsed Logical Plan ==
+'Sort ['delta DESC NULLS LAST], true
++- Project [customer_id#1339 AS customer_id#1379, month_index#1328 AS month_index#1380, month_spend#1351 AS month_spend#1381, month_spend#1364 AS prev_month_spend#1382, (month_spend#1351 - month_spend#1364) AS delta#1383]
+   +- Join Inner, ((customer_id#1339 = customer_id#1363) AND (month_index#1328 = (month_index#1366 + 1)))
+      :- SubqueryAlias curr
+      :  +- Aggregate [Customer ID#1307, month_index#1328], [Customer ID#1307 AS customer_id#1339, month_index#1328, sum(Revenue#1318) AS month_spend#1351]
+      :     +- Project [Invoice#1301, StockCode#1302, Description#1303, Quantity#1304, InvoiceDate#1305, Price#1306, Customer ID#1307, Country#1308, Revenue#1318, ((year(cast(InvoiceDate#1305 as date)) * 12) + month(cast(InvoiceDate#1305 as date))) AS month_index#1328]
+      :        +- Project [Invoice#1301, StockCode#1302, Description#1303, Quantity#1304, InvoiceDate#1305, Price#1306, Customer ID#1307, Country#1308, (cast(Quantity#1304 as double) * Price#1306) AS Revenue#1318]
+      :           +- Filter (((((Quantity#1304 > 0) AND (Price#1306 > cast(0 as double))) AND isnotnull(Customer ID#1307)) AND NOT StartsWith(Invoice#1301, C)) AND ((InvoiceDate#1305 >= cast(2009-12-01 00:00:00 as timestamp)) AND (InvoiceDate#1305 <= cast(2011-12-09 23:59:59 as timestamp))))
+      :              +- Relation [Invoice#1301,StockCode#1302,Description#1303,Quantity#1304,InvoiceDate#1305,Price#1306,Customer ID#1307,Country#1308] csv
+      +- SubqueryAlias prev
+         +- Aggregate [Customer ID#1361, month_index#1366], [Customer ID#1361 AS customer_id#1363, month_index#1366, sum(Revenue#1318) AS month_spend#1364]
+            +- Project [Invoice#1355, StockCode#1356, Description#1357, Quantity#1358, InvoiceDate#1359, Price#1360, Customer ID#1361, Country#1362, Revenue#1318, ((year(cast(InvoiceDate#1359 as date)) * 12) + month(cast(InvoiceDate#1359 as date))) AS month_index#1366]
+               +- Project [Invoice#1355, StockCode#1356, Description#1357, Quantity#1358, InvoiceDate#1359, Price#1360, Customer ID#1361, Country#1362, (cast(Quantity#1358 as double) * Price#1360) AS Revenue#1318]
+                  +- Filter (((((Quantity#1358 > 0) AND (Price#1360 > cast(0 as double))) AND isnotnull(Customer ID#1361)) AND NOT StartsWith(Invoice#1355, C)) AND ((InvoiceDate#1359 >= cast(2009-12-01 00:00:00 as timestamp)) AND (InvoiceDate#1359 <= cast(2011-12-09 23:59:59 as timestamp))))
+                     +- Relation [Invoice#1355,StockCode#1356,Description#1357,Quantity#1358,InvoiceDate#1359,Price#1360,Customer ID#1361,Country#1362] csv
+
+== Analyzed Logical Plan ==
+customer_id: double, month_index: int, month_spend: double, prev_month_spend: double, delta: double
+Sort [delta#1383 DESC NULLS LAST], true
++- Project [customer_id#1339 AS customer_id#1379, month_index#1328 AS month_index#1380, month_spend#1351 AS month_spend#1381, month_spend#1364 AS prev_month_spend#1382, (month_spend#1351 - month_spend#1364) AS delta#1383]
+   +- Join Inner, ((customer_id#1339 = customer_id#1363) AND (month_index#1328 = (month_index#1366 + 1)))
+      :- SubqueryAlias curr
+      :  +- Aggregate [Customer ID#1307, month_index#1328], [Customer ID#1307 AS customer_id#1339, month_index#1328, sum(Revenue#1318) AS month_spend#1351]
+      :     +- Project [Invoice#1301, StockCode#1302, Description#1303, Quantity#1304, InvoiceDate#1305, Price#1306, Customer ID#1307, Country#1308, Revenue#1318, ((year(cast(InvoiceDate#1305 as date)) * 12) + month(cast(InvoiceDate#1305 as date))) AS month_index#1328]
+      :        +- Project [Invoice#1301, StockCode#1302, Description#1303, Quantity#1304, InvoiceDate#1305, Price#1306, Customer ID#1307, Country#1308, (cast(Quantity#1304 as double) * Price#1306) AS Revenue#1318]
+      :           +- Filter (((((Quantity#1304 > 0) AND (Price#1306 > cast(0 as double))) AND isnotnull(Customer ID#1307)) AND NOT StartsWith(Invoice#1301, C)) AND ((InvoiceDate#1305 >= cast(2009-12-01 00:00:00 as timestamp)) AND (InvoiceDate#1305 <= cast(2011-12-09 23:59:59 as timestamp))))
+      :              +- Relation [Invoice#1301,StockCode#1302,Description#1303,Quantity#1304,InvoiceDate#1305,Price#1306,Customer ID#1307,Country#1308] csv
+      +- SubqueryAlias prev
+         +- Aggregate [Customer ID#1361, month_index#1366], [Customer ID#1361 AS customer_id#1363, month_index#1366, sum(Revenue#1318) AS month_spend#1364]
+            +- Project [Invoice#1355, StockCode#1356, Description#1357, Quantity#1358, InvoiceDate#1359, Price#1360, Customer ID#1361, Country#1362, Revenue#1318, ((year(cast(InvoiceDate#1359 as date)) * 12) + month(cast(InvoiceDate#1359 as date))) AS month_index#1366]
+               +- Project [Invoice#1355, StockCode#1356, Description#1357, Quantity#1358, InvoiceDate#1359, Price#1360, Customer ID#1361, Country#1362, (cast(Quantity#1358 as double) * Price#1360) AS Revenue#1318]
+                  +- Filter (((((Quantity#1358 > 0) AND (Price#1360 > cast(0 as double))) AND isnotnull(Customer ID#1361)) AND NOT StartsWith(Invoice#1355, C)) AND ((InvoiceDate#1359 >= cast(2009-12-01 00:00:00 as timestamp)) AND (InvoiceDate#1359 <= cast(2011-12-09 23:59:59 as timestamp))))
+                     +- Relation [Invoice#1355,StockCode#1356,Description#1357,Quantity#1358,InvoiceDate#1359,Price#1360,Customer ID#1361,Country#1362] csv
+
+== Optimized Logical Plan ==
+Sort [delta#1383 DESC NULLS LAST], true
++- Project [customer_id#1339, month_index#1328, month_spend#1351, month_spend#1364 AS prev_month_spend#1382, (month_spend#1351 - month_spend#1364) AS delta#1383]
+   +- Join Inner, ((knownfloatingpointnormalized(normalizenanandzero(customer_id#1339)) = knownfloatingpointnormalized(normalizenanandzero(customer_id#1363))) AND (month_index#1328 = (month_index#1366 + 1)))
+      :- Aggregate [Customer ID#1307, month_index#1328], [Customer ID#1307 AS customer_id#1339, month_index#1328, sum(Revenue#1318) AS month_spend#1351]
+      :  +- Project [Customer ID#1307, (cast(Quantity#1304 as double) * Price#1306) AS Revenue#1318, ((year(cast(InvoiceDate#1305 as date)) * 12) + month(cast(InvoiceDate#1305 as date))) AS month_index#1328]
+      :     +- Filter (((((isnotnull(Quantity#1304) AND isnotnull(Price#1306)) AND isnotnull(Invoice#1301)) AND isnotnull(InvoiceDate#1305)) AND (((((Quantity#1304 > 0) AND (Price#1306 > 0.0)) AND isnotnull(Customer ID#1307)) AND NOT StartsWith(Invoice#1301, C)) AND ((InvoiceDate#1305 >= 2009-12-01 00:00:00) AND (InvoiceDate#1305 <= 2011-12-09 23:59:59)))) AND isnotnull(((year(cast(InvoiceDate#1305 as date)) * 12) + month(cast(InvoiceDate#1305 as date)))))
+      :        +- Relation [Invoice#1301,StockCode#1302,Description#1303,Quantity#1304,InvoiceDate#1305,Price#1306,Customer ID#1307,Country#1308] csv
+      +- Aggregate [Customer ID#1361, month_index#1366], [Customer ID#1361 AS customer_id#1363, month_index#1366, sum(Revenue#1318) AS month_spend#1364]
+         +- Project [Customer ID#1361, (cast(Quantity#1358 as double) * Price#1360) AS Revenue#1318, ((year(cast(InvoiceDate#1359 as date)) * 12) + month(cast(InvoiceDate#1359 as date))) AS month_index#1366]
+            +- Filter (((((isnotnull(Quantity#1358) AND isnotnull(Price#1360)) AND isnotnull(Invoice#1355)) AND isnotnull(InvoiceDate#1359)) AND (((((Quantity#1358 > 0) AND (Price#1360 > 0.0)) AND isnotnull(Customer ID#1361)) AND NOT StartsWith(Invoice#1355, C)) AND ((InvoiceDate#1359 >= 2009-12-01 00:00:00) AND (InvoiceDate#1359 <= 2011-12-09 23:59:59)))) AND isnotnull(((year(cast(InvoiceDate#1359 as date)) * 12) + month(cast(InvoiceDate#1359 as date)))))
+               +- Relation [Invoice#1355,StockCode#1356,Description#1357,Quantity#1358,InvoiceDate#1359,Price#1360,Customer ID#1361,Country#1362] csv
+
+== Physical Plan ==
+AdaptiveSparkPlan isFinalPlan=false
++- Sort [delta#1383 DESC NULLS LAST], true, 0
+   +- Exchange rangepartitioning(delta#1383 DESC NULLS LAST, 8), ENSURE_REQUIREMENTS, [plan_id=1103]
+      +- Project [customer_id#1339, month_index#1328, month_spend#1351, month_spend#1364 AS prev_month_spend#1382, (month_spend#1351 - month_spend#1364) AS delta#1383]
+         +- SortMergeJoin [knownfloatingpointnormalized(normalizenanandzero(customer_id#1339)), month_index#1328], [knownfloatingpointnormalized(normalizenanandzero(customer_id#1363)), (month_index#1366 + 1)], Inner
+            :- Sort [knownfloatingpointnormalized(normalizenanandzero(customer_id#1339)) ASC NULLS FIRST, month_index#1328 ASC NULLS FIRST], false, 0
+            :  +- Exchange hashpartitioning(knownfloatingpointnormalized(normalizenanandzero(customer_id#1339)), month_index#1328, 8), ENSURE_REQUIREMENTS, [plan_id=1096]
+            :     +- HashAggregate(keys=[Customer ID#1307, month_index#1328], functions=[sum(Revenue#1318)], output=[customer_id#1339, month_index#1328, month_spend#1351])
+            :        +- Exchange hashpartitioning(Customer ID#1307, month_index#1328, 8), ENSURE_REQUIREMENTS, [plan_id=1090]
+            :           +- HashAggregate(keys=[knownfloatingpointnormalized(normalizenanandzero(Customer ID#1307)) AS Customer ID#1307, month_index#1328], functions=[partial_sum(Revenue#1318)], output=[Customer ID#1307, month_index#1328, sum#1390])
+            :              +- Project [Customer ID#1307, (cast(Quantity#1304 as double) * Price#1306) AS Revenue#1318, ((year(cast(InvoiceDate#1305 as date)) * 12) + month(cast(InvoiceDate#1305 as date))) AS month_index#1328]
+            :                 +- Filter ((((((((((isnotnull(Quantity#1304) AND isnotnull(Price#1306)) AND isnotnull(Invoice#1301)) AND isnotnull(InvoiceDate#1305)) AND (Quantity#1304 > 0)) AND (Price#1306 > 0.0)) AND isnotnull(Customer ID#1307)) AND NOT StartsWith(Invoice#1301, C)) AND (InvoiceDate#1305 >= 2009-12-01 00:00:00)) AND (InvoiceDate#1305 <= 2011-12-09 23:59:59)) AND isnotnull(((year(cast(InvoiceDate#1305 as date)) * 12) + month(cast(InvoiceDate#1305 as date)))))
+            :                    +- FileScan csv [Invoice#1301,Quantity#1304,InvoiceDate#1305,Price#1306,Customer ID#1307] Batched: false, DataFilters: [isnotnull(Quantity#1304), isnotnull(Price#1306), isnotnull(Invoice#1301), isnotnull(InvoiceDate#..., Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/Users/marwanamr/Mini project2/data/raw/online_retail_II.csv], PartitionFilters: [], PushedFilters: [IsNotNull(Quantity), IsNotNull(Price), IsNotNull(Invoice), IsNotNull(InvoiceDate), GreaterThan(Q..., ReadSchema: struct<Invoice:string,Quantity:int,InvoiceDate:timestamp,Price:double,Customer ID:double>
+            +- Sort [knownfloatingpointnormalized(normalizenanandzero(customer_id#1363)) ASC NULLS FIRST, (month_index#1366 + 1) ASC NULLS FIRST], false, 0
+               +- Exchange hashpartitioning(knownfloatingpointnormalized(normalizenanandzero(customer_id#1363)), (month_index#1366 + 1), 8), ENSURE_REQUIREMENTS, [plan_id=1097]
+                  +- HashAggregate(keys=[Customer ID#1361, month_index#1366], functions=[sum(Revenue#1318)], output=[customer_id#1363, month_index#1366, month_spend#1364])
+                     +- Exchange hashpartitioning(Customer ID#1361, month_index#1366, 8), ENSURE_REQUIREMENTS, [plan_id=1092]
+                        +- HashAggregate(keys=[knownfloatingpointnormalized(normalizenanandzero(Customer ID#1361)) AS Customer ID#1361, month_index#1366], functions=[partial_sum(Revenue#1318)], output=[Customer ID#1361, month_index#1366, sum#1390])
+                           +- Project [Customer ID#1361, (cast(Quantity#1358 as double) * Price#1360) AS Revenue#1318, ((year(cast(InvoiceDate#1359 as date)) * 12) + month(cast(InvoiceDate#1359 as date))) AS month_index#1366]
+                              +- Filter ((((((((((isnotnull(Quantity#1358) AND isnotnull(Price#1360)) AND isnotnull(Invoice#1355)) AND isnotnull(InvoiceDate#1359)) AND (Quantity#1358 > 0)) AND (Price#1360 > 0.0)) AND isnotnull(Customer ID#1361)) AND NOT StartsWith(Invoice#1355, C)) AND (InvoiceDate#1359 >= 2009-12-01 00:00:00)) AND (InvoiceDate#1359 <= 2011-12-09 23:59:59)) AND isnotnull(((year(cast(InvoiceDate#1359 as date)) * 12) + month(cast(InvoiceDate#1359 as date)))))
+                                 +- FileScan csv [Invoice#1355,Quantity#1358,InvoiceDate#1359,Price#1360,Customer ID#1361] Batched: false, DataFilters: [isnotnull(Quantity#1358), isnotnull(Price#1360), isnotnull(Invoice#1355), isnotnull(InvoiceDate#..., Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/Users/marwanamr/Mini project2/data/raw/online_retail_II.csv], PartitionFilters: [], PushedFilters: [IsNotNull(Quantity), IsNotNull(Price), IsNotNull(Invoice), IsNotNull(InvoiceDate), GreaterThan(Q..., ReadSchema: struct<Invoice:string,Quantity:int,InvoiceDate:timestamp,Price:double,Customer ID:double>
+

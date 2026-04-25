@@ -1,0 +1,75 @@
+== Parsed Logical Plan ==
+'Project [customer_id#1506, recency_days#1517, frequency#1518L, monetary#1520, R#1532, F#1544, M#1557, CASE WHEN ((('R >= 4) AND ('F >= 4)) AND ('M >= 4)) THEN Champions WHEN ((('R >= 3) AND ('F >= 3)) AND ('M >= 3)) THEN Loyal WHEN (('R <= 2) AND ('F >= 3)) THEN At-Risk WHEN (('R <= 2) AND ('F <= 2)) THEN Lost ELSE Other END AS segment#1566]
++- Project [customer_id#1506, recency_days#1517, frequency#1518L, monetary#1520, R#1532, F#1544, M#1557]
+   +- Project [customer_id#1506, recency_days#1517, frequency#1518L, monetary#1520, R#1532, F#1544, _we0#1558, (6 - _we0#1558) AS M#1557]
+      +- Window [ntile(5) windowspecdefinition(monetary#1520 DESC NULLS LAST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS _we0#1558], [monetary#1520 DESC NULLS LAST]
+         +- Project [customer_id#1506, recency_days#1517, frequency#1518L, monetary#1520, R#1532, F#1544]
+            +- Project [customer_id#1506, recency_days#1517, frequency#1518L, monetary#1520, R#1532, F#1544]
+               +- Project [customer_id#1506, recency_days#1517, frequency#1518L, monetary#1520, R#1532, _we0#1545, (6 - _we0#1545) AS F#1544]
+                  +- Window [ntile(5) windowspecdefinition(frequency#1518L DESC NULLS LAST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS _we0#1545], [frequency#1518L DESC NULLS LAST]
+                     +- Project [customer_id#1506, recency_days#1517, frequency#1518L, monetary#1520, R#1532]
+                        +- Project [customer_id#1506, recency_days#1517, frequency#1518L, monetary#1520, R#1532]
+                           +- Project [customer_id#1506, recency_days#1517, frequency#1518L, monetary#1520, _we0#1533, (6 - _we0#1533) AS R#1532]
+                              +- Window [ntile(5) windowspecdefinition(recency_days#1517 ASC NULLS FIRST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS _we0#1533], [recency_days#1517 ASC NULLS FIRST]
+                                 +- Project [customer_id#1506, recency_days#1517, frequency#1518L, monetary#1520]
+                                    +- Aggregate [Customer ID#1464], [Customer ID#1464 AS customer_id#1506, datediff(cast(2011-12-09 12:50:00 as date), cast(max(InvoiceDate#1462) as date)) AS recency_days#1517, count(distinct Invoice#1458) AS frequency#1518L, sum(Revenue#1475) AS monetary#1520]
+                                       +- Project [Invoice#1458, StockCode#1459, Description#1460, Quantity#1461, InvoiceDate#1462, Price#1463, Customer ID#1464, Country#1465, (cast(Quantity#1461 as double) * Price#1463) AS Revenue#1475]
+                                          +- Filter (((((Quantity#1461 > 0) AND (Price#1463 > cast(0 as double))) AND isnotnull(Customer ID#1464)) AND NOT StartsWith(Invoice#1458, C)) AND ((InvoiceDate#1462 >= cast(2009-12-01 00:00:00 as timestamp)) AND (InvoiceDate#1462 <= cast(2011-12-09 23:59:59 as timestamp))))
+                                             +- Relation [Invoice#1458,StockCode#1459,Description#1460,Quantity#1461,InvoiceDate#1462,Price#1463,Customer ID#1464,Country#1465] csv
+
+== Analyzed Logical Plan ==
+customer_id: double, recency_days: int, frequency: bigint, monetary: double, R: int, F: int, M: int, segment: string
+Project [customer_id#1506, recency_days#1517, frequency#1518L, monetary#1520, R#1532, F#1544, M#1557, CASE WHEN (((R#1532 >= 4) AND (F#1544 >= 4)) AND (M#1557 >= 4)) THEN Champions WHEN (((R#1532 >= 3) AND (F#1544 >= 3)) AND (M#1557 >= 3)) THEN Loyal WHEN ((R#1532 <= 2) AND (F#1544 >= 3)) THEN At-Risk WHEN ((R#1532 <= 2) AND (F#1544 <= 2)) THEN Lost ELSE Other END AS segment#1566]
++- Project [customer_id#1506, recency_days#1517, frequency#1518L, monetary#1520, R#1532, F#1544, M#1557]
+   +- Project [customer_id#1506, recency_days#1517, frequency#1518L, monetary#1520, R#1532, F#1544, _we0#1558, (6 - _we0#1558) AS M#1557]
+      +- Window [ntile(5) windowspecdefinition(monetary#1520 DESC NULLS LAST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS _we0#1558], [monetary#1520 DESC NULLS LAST]
+         +- Project [customer_id#1506, recency_days#1517, frequency#1518L, monetary#1520, R#1532, F#1544]
+            +- Project [customer_id#1506, recency_days#1517, frequency#1518L, monetary#1520, R#1532, F#1544]
+               +- Project [customer_id#1506, recency_days#1517, frequency#1518L, monetary#1520, R#1532, _we0#1545, (6 - _we0#1545) AS F#1544]
+                  +- Window [ntile(5) windowspecdefinition(frequency#1518L DESC NULLS LAST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS _we0#1545], [frequency#1518L DESC NULLS LAST]
+                     +- Project [customer_id#1506, recency_days#1517, frequency#1518L, monetary#1520, R#1532]
+                        +- Project [customer_id#1506, recency_days#1517, frequency#1518L, monetary#1520, R#1532]
+                           +- Project [customer_id#1506, recency_days#1517, frequency#1518L, monetary#1520, _we0#1533, (6 - _we0#1533) AS R#1532]
+                              +- Window [ntile(5) windowspecdefinition(recency_days#1517 ASC NULLS FIRST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS _we0#1533], [recency_days#1517 ASC NULLS FIRST]
+                                 +- Project [customer_id#1506, recency_days#1517, frequency#1518L, monetary#1520]
+                                    +- Aggregate [Customer ID#1464], [Customer ID#1464 AS customer_id#1506, datediff(cast(2011-12-09 12:50:00 as date), cast(max(InvoiceDate#1462) as date)) AS recency_days#1517, count(distinct Invoice#1458) AS frequency#1518L, sum(Revenue#1475) AS monetary#1520]
+                                       +- Project [Invoice#1458, StockCode#1459, Description#1460, Quantity#1461, InvoiceDate#1462, Price#1463, Customer ID#1464, Country#1465, (cast(Quantity#1461 as double) * Price#1463) AS Revenue#1475]
+                                          +- Filter (((((Quantity#1461 > 0) AND (Price#1463 > cast(0 as double))) AND isnotnull(Customer ID#1464)) AND NOT StartsWith(Invoice#1458, C)) AND ((InvoiceDate#1462 >= cast(2009-12-01 00:00:00 as timestamp)) AND (InvoiceDate#1462 <= cast(2011-12-09 23:59:59 as timestamp))))
+                                             +- Relation [Invoice#1458,StockCode#1459,Description#1460,Quantity#1461,InvoiceDate#1462,Price#1463,Customer ID#1464,Country#1465] csv
+
+== Optimized Logical Plan ==
+Project [customer_id#1506, recency_days#1517, frequency#1518L, monetary#1520, R#1532, F#1544, M#1557, CASE WHEN (((R#1532 >= 4) AND (F#1544 >= 4)) AND (M#1557 >= 4)) THEN Champions WHEN (((R#1532 >= 3) AND (F#1544 >= 3)) AND (M#1557 >= 3)) THEN Loyal WHEN ((R#1532 <= 2) AND (F#1544 >= 3)) THEN At-Risk WHEN ((R#1532 <= 2) AND (F#1544 <= 2)) THEN Lost ELSE Other END AS segment#1566]
++- Project [customer_id#1506, recency_days#1517, frequency#1518L, monetary#1520, R#1532, F#1544, (6 - _we0#1558) AS M#1557]
+   +- Window [ntile(5) windowspecdefinition(monetary#1520 DESC NULLS LAST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS _we0#1558], [monetary#1520 DESC NULLS LAST]
+      +- Project [customer_id#1506, recency_days#1517, frequency#1518L, monetary#1520, R#1532, (6 - _we0#1545) AS F#1544]
+         +- Window [ntile(5) windowspecdefinition(frequency#1518L DESC NULLS LAST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS _we0#1545], [frequency#1518L DESC NULLS LAST]
+            +- Project [customer_id#1506, recency_days#1517, frequency#1518L, monetary#1520, (6 - _we0#1533) AS R#1532]
+               +- Window [ntile(5) windowspecdefinition(recency_days#1517 ASC NULLS FIRST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS _we0#1533], [recency_days#1517 ASC NULLS FIRST]
+                  +- Aggregate [Customer ID#1464], [Customer ID#1464 AS customer_id#1506, datediff(2011-12-09, cast(max(InvoiceDate#1462) as date)) AS recency_days#1517, count(distinct Invoice#1458) AS frequency#1518L, sum(Revenue#1475) AS monetary#1520]
+                     +- Project [Invoice#1458, InvoiceDate#1462, Customer ID#1464, (cast(Quantity#1461 as double) * Price#1463) AS Revenue#1475]
+                        +- Filter ((((isnotnull(Quantity#1461) AND isnotnull(Price#1463)) AND isnotnull(Invoice#1458)) AND isnotnull(InvoiceDate#1462)) AND (((((Quantity#1461 > 0) AND (Price#1463 > 0.0)) AND isnotnull(Customer ID#1464)) AND NOT StartsWith(Invoice#1458, C)) AND ((InvoiceDate#1462 >= 2009-12-01 00:00:00) AND (InvoiceDate#1462 <= 2011-12-09 23:59:59))))
+                           +- Relation [Invoice#1458,StockCode#1459,Description#1460,Quantity#1461,InvoiceDate#1462,Price#1463,Customer ID#1464,Country#1465] csv
+
+== Physical Plan ==
+AdaptiveSparkPlan isFinalPlan=false
++- Project [customer_id#1506, recency_days#1517, frequency#1518L, monetary#1520, R#1532, F#1544, M#1557, CASE WHEN (((R#1532 >= 4) AND (F#1544 >= 4)) AND (M#1557 >= 4)) THEN Champions WHEN (((R#1532 >= 3) AND (F#1544 >= 3)) AND (M#1557 >= 3)) THEN Loyal WHEN ((R#1532 <= 2) AND (F#1544 >= 3)) THEN At-Risk WHEN ((R#1532 <= 2) AND (F#1544 <= 2)) THEN Lost ELSE Other END AS segment#1566]
+   +- Project [customer_id#1506, recency_days#1517, frequency#1518L, monetary#1520, R#1532, F#1544, (6 - _we0#1558) AS M#1557]
+      +- Window [ntile(5) windowspecdefinition(monetary#1520 DESC NULLS LAST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS _we0#1558], [monetary#1520 DESC NULLS LAST]
+         +- Sort [monetary#1520 DESC NULLS LAST], false, 0
+            +- Project [customer_id#1506, recency_days#1517, frequency#1518L, monetary#1520, R#1532, (6 - _we0#1545) AS F#1544]
+               +- Window [ntile(5) windowspecdefinition(frequency#1518L DESC NULLS LAST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS _we0#1545], [frequency#1518L DESC NULLS LAST]
+                  +- Sort [frequency#1518L DESC NULLS LAST], false, 0
+                     +- Project [customer_id#1506, recency_days#1517, frequency#1518L, monetary#1520, (6 - _we0#1533) AS R#1532]
+                        +- Window [ntile(5) windowspecdefinition(recency_days#1517 ASC NULLS FIRST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS _we0#1533], [recency_days#1517 ASC NULLS FIRST]
+                           +- Sort [recency_days#1517 ASC NULLS FIRST], false, 0
+                              +- Exchange SinglePartition, ENSURE_REQUIREMENTS, [plan_id=1270]
+                                 +- HashAggregate(keys=[Customer ID#1464], functions=[max(InvoiceDate#1462), sum(Revenue#1475), count(distinct Invoice#1458)], output=[customer_id#1506, recency_days#1517, frequency#1518L, monetary#1520])
+                                    +- Exchange hashpartitioning(Customer ID#1464, 8), ENSURE_REQUIREMENTS, [plan_id=1267]
+                                       +- HashAggregate(keys=[Customer ID#1464], functions=[merge_max(InvoiceDate#1462), merge_sum(Revenue#1475), partial_count(distinct Invoice#1458)], output=[Customer ID#1464, max#1576, sum#1578, count#1581L])
+                                          +- HashAggregate(keys=[Customer ID#1464, Invoice#1458], functions=[merge_max(InvoiceDate#1462), merge_sum(Revenue#1475)], output=[Customer ID#1464, Invoice#1458, max#1576, sum#1578])
+                                             +- Exchange hashpartitioning(Customer ID#1464, Invoice#1458, 8), ENSURE_REQUIREMENTS, [plan_id=1263]
+                                                +- HashAggregate(keys=[knownfloatingpointnormalized(normalizenanandzero(Customer ID#1464)) AS Customer ID#1464, Invoice#1458], functions=[partial_max(InvoiceDate#1462), partial_sum(Revenue#1475)], output=[Customer ID#1464, Invoice#1458, max#1576, sum#1578])
+                                                   +- Project [Invoice#1458, InvoiceDate#1462, Customer ID#1464, (cast(Quantity#1461 as double) * Price#1463) AS Revenue#1475]
+                                                      +- Filter (((((((((isnotnull(Quantity#1461) AND isnotnull(Price#1463)) AND isnotnull(Invoice#1458)) AND isnotnull(InvoiceDate#1462)) AND (Quantity#1461 > 0)) AND (Price#1463 > 0.0)) AND isnotnull(Customer ID#1464)) AND NOT StartsWith(Invoice#1458, C)) AND (InvoiceDate#1462 >= 2009-12-01 00:00:00)) AND (InvoiceDate#1462 <= 2011-12-09 23:59:59))
+                                                         +- FileScan csv [Invoice#1458,Quantity#1461,InvoiceDate#1462,Price#1463,Customer ID#1464] Batched: false, DataFilters: [isnotnull(Quantity#1461), isnotnull(Price#1463), isnotnull(Invoice#1458), isnotnull(InvoiceDate#..., Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/Users/marwanamr/Mini project2/data/raw/online_retail_II.csv], PartitionFilters: [], PushedFilters: [IsNotNull(Quantity), IsNotNull(Price), IsNotNull(Invoice), IsNotNull(InvoiceDate), GreaterThan(Q..., ReadSchema: struct<Invoice:string,Quantity:int,InvoiceDate:timestamp,Price:double,Customer ID:double>
+

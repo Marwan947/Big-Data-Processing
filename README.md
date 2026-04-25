@@ -38,19 +38,23 @@ spark-retail-case-study/
 * Python 3.9+ (tested on 3.9 and 3.11)
 * Java 11 (required by Spark 3.5)
 * ~2 GB free disk for the Parquet copy and benchmark outputs
+* Internet connection on first run (to fetch the dataset from UCI)
 
 ## Setup
 
 ```bash
-bash scripts/setup.sh        # creates .venv and installs requirements
+bash scripts/setup.sh           # creates .venv and installs requirements
 source .venv/bin/activate
+bash scripts/download_data.sh   # ~95 MB CSV from UCI; takes ~30 s
 ```
+
+The dataset (`data/raw/online_retail_II.csv`) is **not** in the repo — it is downloaded from [UCI Online Retail II](https://archive.ics.uci.edu/dataset/502/online+retail+ii) by `download_data.sh`. The script unzips the workbook UCI ships, concatenates the two sheets, and writes the combined CSV. Re-running the script is a no-op once the file exists.
 
 ## Running
 
 ```bash
 # 1. Convert CSV → Parquet (one-time, ~1 minute)
-bash scripts/run_prep.sh
+bash scripts/run_prep.sh           # depends on data/raw/online_retail_II.csv being present
 
 # 2. Run a single query
 bash scripts/run_query.sh dataframe 01     # = python -m src.dataframe.q01_filter

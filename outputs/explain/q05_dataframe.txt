@@ -1,0 +1,51 @@
+== Parsed Logical Plan ==
+'Sort ['Year ASC NULLS FIRST, 'Month ASC NULLS FIRST], true
++- Project [Year#857, Month#858, revenue#869, cumulative_revenue#874, moving_avg_3mo#880]
+   +- Project [Year#857, Month#858, revenue#869, cumulative_revenue#874, moving_avg_3mo#880, moving_avg_3mo#880]
+      +- Window [avg(revenue#869) windowspecdefinition(Year#857 ASC NULLS FIRST, Month#858 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -2, currentrow$())) AS moving_avg_3mo#880], [Year#857 ASC NULLS FIRST, Month#858 ASC NULLS FIRST]
+         +- Project [Year#857, Month#858, revenue#869, cumulative_revenue#874]
+            +- Project [Year#857, Month#858, revenue#869, cumulative_revenue#874]
+               +- Project [Year#857, Month#858, revenue#869, cumulative_revenue#874, cumulative_revenue#874]
+                  +- Window [sum(revenue#869) windowspecdefinition(Year#857 ASC NULLS FIRST, Month#858 ASC NULLS FIRST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS cumulative_revenue#874], [Year#857 ASC NULLS FIRST, Month#858 ASC NULLS FIRST]
+                     +- Project [Year#857, Month#858, revenue#869]
+                        +- Aggregate [year(cast(InvoiceDate#834 as date)), month(cast(InvoiceDate#834 as date))], [year(cast(InvoiceDate#834 as date)) AS Year#857, month(cast(InvoiceDate#834 as date)) AS Month#858, sum(Revenue#847) AS revenue#869]
+                           +- Project [Invoice#830, StockCode#831, Description#832, Quantity#833, InvoiceDate#834, Price#835, Customer ID#836, Country#837, (cast(Quantity#833 as double) * Price#835) AS Revenue#847]
+                              +- Filter (((((Quantity#833 > 0) AND (Price#835 > cast(0 as double))) AND isnotnull(Customer ID#836)) AND NOT StartsWith(Invoice#830, C)) AND ((InvoiceDate#834 >= cast(2009-12-01 00:00:00 as timestamp)) AND (InvoiceDate#834 <= cast(2011-12-09 23:59:59 as timestamp))))
+                                 +- Relation [Invoice#830,StockCode#831,Description#832,Quantity#833,InvoiceDate#834,Price#835,Customer ID#836,Country#837] csv
+
+== Analyzed Logical Plan ==
+Year: int, Month: int, revenue: double, cumulative_revenue: double, moving_avg_3mo: double
+Sort [Year#857 ASC NULLS FIRST, Month#858 ASC NULLS FIRST], true
++- Project [Year#857, Month#858, revenue#869, cumulative_revenue#874, moving_avg_3mo#880]
+   +- Project [Year#857, Month#858, revenue#869, cumulative_revenue#874, moving_avg_3mo#880, moving_avg_3mo#880]
+      +- Window [avg(revenue#869) windowspecdefinition(Year#857 ASC NULLS FIRST, Month#858 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -2, currentrow$())) AS moving_avg_3mo#880], [Year#857 ASC NULLS FIRST, Month#858 ASC NULLS FIRST]
+         +- Project [Year#857, Month#858, revenue#869, cumulative_revenue#874]
+            +- Project [Year#857, Month#858, revenue#869, cumulative_revenue#874]
+               +- Project [Year#857, Month#858, revenue#869, cumulative_revenue#874, cumulative_revenue#874]
+                  +- Window [sum(revenue#869) windowspecdefinition(Year#857 ASC NULLS FIRST, Month#858 ASC NULLS FIRST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS cumulative_revenue#874], [Year#857 ASC NULLS FIRST, Month#858 ASC NULLS FIRST]
+                     +- Project [Year#857, Month#858, revenue#869]
+                        +- Aggregate [year(cast(InvoiceDate#834 as date)), month(cast(InvoiceDate#834 as date))], [year(cast(InvoiceDate#834 as date)) AS Year#857, month(cast(InvoiceDate#834 as date)) AS Month#858, sum(Revenue#847) AS revenue#869]
+                           +- Project [Invoice#830, StockCode#831, Description#832, Quantity#833, InvoiceDate#834, Price#835, Customer ID#836, Country#837, (cast(Quantity#833 as double) * Price#835) AS Revenue#847]
+                              +- Filter (((((Quantity#833 > 0) AND (Price#835 > cast(0 as double))) AND isnotnull(Customer ID#836)) AND NOT StartsWith(Invoice#830, C)) AND ((InvoiceDate#834 >= cast(2009-12-01 00:00:00 as timestamp)) AND (InvoiceDate#834 <= cast(2011-12-09 23:59:59 as timestamp))))
+                                 +- Relation [Invoice#830,StockCode#831,Description#832,Quantity#833,InvoiceDate#834,Price#835,Customer ID#836,Country#837] csv
+
+== Optimized Logical Plan ==
+Sort [Year#857 ASC NULLS FIRST, Month#858 ASC NULLS FIRST], true
++- Window [sum(revenue#869) windowspecdefinition(Year#857 ASC NULLS FIRST, Month#858 ASC NULLS FIRST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS cumulative_revenue#874, avg(revenue#869) windowspecdefinition(Year#857 ASC NULLS FIRST, Month#858 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -2, currentrow$())) AS moving_avg_3mo#880], [Year#857 ASC NULLS FIRST, Month#858 ASC NULLS FIRST]
+   +- Aggregate [_groupingexpression#886, _groupingexpression#887], [_groupingexpression#886 AS Year#857, _groupingexpression#887 AS Month#858, sum(Revenue#847) AS revenue#869]
+      +- Project [(cast(Quantity#833 as double) * Price#835) AS Revenue#847, year(cast(InvoiceDate#834 as date)) AS _groupingexpression#886, month(cast(InvoiceDate#834 as date)) AS _groupingexpression#887]
+         +- Filter ((((isnotnull(Quantity#833) AND isnotnull(Price#835)) AND isnotnull(Invoice#830)) AND isnotnull(InvoiceDate#834)) AND (((((Quantity#833 > 0) AND (Price#835 > 0.0)) AND isnotnull(Customer ID#836)) AND NOT StartsWith(Invoice#830, C)) AND ((InvoiceDate#834 >= 2009-12-01 00:00:00) AND (InvoiceDate#834 <= 2011-12-09 23:59:59))))
+            +- Relation [Invoice#830,StockCode#831,Description#832,Quantity#833,InvoiceDate#834,Price#835,Customer ID#836,Country#837] csv
+
+== Physical Plan ==
+AdaptiveSparkPlan isFinalPlan=false
++- Window [sum(revenue#869) windowspecdefinition(Year#857 ASC NULLS FIRST, Month#858 ASC NULLS FIRST, specifiedwindowframe(RowFrame, unboundedpreceding$(), currentrow$())) AS cumulative_revenue#874, avg(revenue#869) windowspecdefinition(Year#857 ASC NULLS FIRST, Month#858 ASC NULLS FIRST, specifiedwindowframe(RowFrame, -2, currentrow$())) AS moving_avg_3mo#880], [Year#857 ASC NULLS FIRST, Month#858 ASC NULLS FIRST]
+   +- Sort [Year#857 ASC NULLS FIRST, Month#858 ASC NULLS FIRST], false, 0
+      +- Exchange SinglePartition, ENSURE_REQUIREMENTS, [plan_id=564]
+         +- HashAggregate(keys=[_groupingexpression#886, _groupingexpression#887], functions=[sum(Revenue#847)], output=[Year#857, Month#858, revenue#869])
+            +- Exchange hashpartitioning(_groupingexpression#886, _groupingexpression#887, 8), ENSURE_REQUIREMENTS, [plan_id=561]
+               +- HashAggregate(keys=[_groupingexpression#886, _groupingexpression#887], functions=[partial_sum(Revenue#847)], output=[_groupingexpression#886, _groupingexpression#887, sum#889])
+                  +- Project [(cast(Quantity#833 as double) * Price#835) AS Revenue#847, year(cast(InvoiceDate#834 as date)) AS _groupingexpression#886, month(cast(InvoiceDate#834 as date)) AS _groupingexpression#887]
+                     +- Filter (((((((((isnotnull(Quantity#833) AND isnotnull(Price#835)) AND isnotnull(Invoice#830)) AND isnotnull(InvoiceDate#834)) AND (Quantity#833 > 0)) AND (Price#835 > 0.0)) AND isnotnull(Customer ID#836)) AND NOT StartsWith(Invoice#830, C)) AND (InvoiceDate#834 >= 2009-12-01 00:00:00)) AND (InvoiceDate#834 <= 2011-12-09 23:59:59))
+                        +- FileScan csv [Invoice#830,Quantity#833,InvoiceDate#834,Price#835,Customer ID#836] Batched: false, DataFilters: [isnotnull(Quantity#833), isnotnull(Price#835), isnotnull(Invoice#830), isnotnull(InvoiceDate#834..., Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/Users/marwanamr/Mini project2/data/raw/online_retail_II.csv], PartitionFilters: [], PushedFilters: [IsNotNull(Quantity), IsNotNull(Price), IsNotNull(Invoice), IsNotNull(InvoiceDate), GreaterThan(Q..., ReadSchema: struct<Invoice:string,Quantity:int,InvoiceDate:timestamp,Price:double,Customer ID:double>
+
